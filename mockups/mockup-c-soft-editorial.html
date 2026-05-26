@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Curio · C · Soft Editorial</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,700;9..144,900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --c-bg: #FAF6EE;
+    --c-bg-grad: #F2E7D4;
+    --c-card: #FFFFFF;
+    --c-cream: #F0E6D2;
+    --c-ink: #161412;
+    --c-ink-2: #5A5048;
+    --c-ink-3: #8E847A;
+    --c-accent: #6B1F1F;
+    --c-orange: #C77D3E;
+    --c-rule: #1A1A1A;
+    --r-card: 4px;
+    --r-pill: 999px;
+    --shadow-soft: 0 2px 8px rgba(60, 40, 20, 0.04);
+    --shadow-card: 0 4px 16px rgba(60, 40, 20, 0.06);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', -apple-system, 'PingFang SC', sans-serif;
+    background: var(--c-bg);
+    color: var(--c-ink);
+    -webkit-font-smoothing: antialiased;
+    padding: 40px 20px;
+  }
+  .serif {
+    font-family: 'Fraunces', 'Times New Roman', serif;
+    font-feature-settings: 'liga' on, 'ss01' on;
+  }
+  .lab-header {
+    max-width: 1280px;
+    margin: 0 auto 48px;
+    text-align: center;
+  }
+  .lab-tag {
+    display: inline-block;
+    padding: 6px 14px;
+    background: var(--c-ink);
+    color: var(--c-bg);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    border-radius: var(--r-pill);
+    margin-bottom: 14px;
+    text-transform: uppercase;
+  }
+  .lab-title {
+    font-family: 'Fraunces', serif;
+    font-size: 40px;
+    font-weight: 900;
+    letter-spacing: -0.03em;
+    line-height: 1;
+  }
+  .lab-sub {
+    color: var(--c-ink-2);
+    margin-top: 10px;
+    font-size: 14px;
+    letter-spacing: 0.01em;
+  }
+  .screens {
+    max-width: 1280px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+  }
+  @media (max-width: 1024px) { .screens { grid-template-columns: 1fr; } }
+  .phone {
+    background: var(--c-bg);
+    border: 1px solid var(--c-cream);
+    border-radius: 36px;
+    padding: 18px 16px;
+    box-shadow: var(--shadow-card);
+    aspect-ratio: 9 / 19.5;
+    overflow: hidden;
+    position: relative;
+  }
+  .phone-label {
+    position: absolute;
+    top: -28px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--c-ink);
+    white-space: nowrap;
+  }
+  .statusbar {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--c-ink);
+    padding: 4px 12px 8px;
+  }
+
+  /* Editorial nameplate */
+  .nameplate {
+    border-top: 2px solid var(--c-rule);
+    border-bottom: 1px solid var(--c-rule);
+    padding: 8px 10px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+  }
+  .nameplate-title {
+    font-family: 'Fraunces', serif;
+    font-size: 22px;
+    font-weight: 900;
+    letter-spacing: -0.02em;
+  }
+  .nameplate-vol {
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--c-ink-2);
+    font-weight: 600;
+  }
+
+  /* HOME */
+  .home-eyebrow {
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--c-accent);
+    font-weight: 700;
+    padding: 0 10px 4px;
+  }
+  .home-headline {
+    font-family: 'Fraunces', serif;
+    font-size: 38px;
+    font-weight: 900;
+    line-height: 0.95;
+    letter-spacing: -0.04em;
+    padding: 0 10px 14px;
+  }
+  .home-headline em {
+    font-style: italic;
+    font-weight: 500;
+    color: var(--c-accent);
+  }
+  .home-deck {
+    font-size: 12px;
+    line-height: 1.55;
+    color: var(--c-ink-2);
+    padding: 0 10px 16px;
+    border-bottom: 1px solid var(--c-cream);
+    margin-bottom: 14px;
+  }
+  .home-deck b { color: var(--c-ink); font-weight: 600; }
+
+  .capture-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 4px;
+    padding: 0 10px 16px;
+  }
+  .cap-btn {
+    background: var(--c-card);
+    border: 1px solid var(--c-cream);
+    aspect-ratio: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-size: 9px;
+    color: var(--c-ink-2);
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  .cap-num {
+    font-family: 'Fraunces', serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--c-ink);
+  }
+
+  .section-rule {
+    border-top: 1px solid var(--c-rule);
+    margin: 0 10px 4px;
+  }
+  .section-cap {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--c-ink-2);
+    padding: 4px 10px 8px;
+  }
+
+  .topic-row {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    padding: 10px;
+    border-bottom: 1px solid var(--c-cream);
+  }
+  .topic-no {
+    font-family: 'Fraunces', serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--c-accent);
+    width: 28px;
+    line-height: 1;
+  }
+  .topic-info { flex: 1; }
+  .topic-name {
+    font-family: 'Fraunces', serif;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--c-ink);
+  }
+  .topic-byline {
+    font-size: 10px;
+    color: var(--c-ink-3);
+    margin-top: 1px;
+    letter-spacing: 0.02em;
+  }
+  .topic-count {
+    font-family: 'Fraunces', serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--c-ink);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .home-cta {
+    margin: 18px 10px 0;
+    background: var(--c-ink);
+    color: var(--c-bg);
+    text-align: center;
+    padding: 13px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+
+  /* REFLECTION */
+  .refl-issue {
+    text-align: center;
+    padding: 8px 0 14px;
+  }
+  .refl-issue-no {
+    font-size: 9px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--c-ink-2);
+    font-weight: 600;
+  }
+  .refl-date {
+    font-family: 'Fraunces', serif;
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    margin-top: 2px;
+  }
+  .refl-dek {
+    font-size: 10px;
+    color: var(--c-ink-3);
+    margin-top: 4px;
+    letter-spacing: 0.05em;
+  }
+  .refl-title {
+    font-family: 'Fraunces', serif;
+    font-size: 30px;
+    font-weight: 900;
+    line-height: 0.95;
+    letter-spacing: -0.03em;
+    padding: 14px 10px 8px;
+    border-top: 2px solid var(--c-rule);
+  }
+  .refl-title em { font-style: italic; color: var(--c-accent); font-weight: 500; }
+
+  .refl-mode-line {
+    padding: 0 10px 14px;
+    font-size: 11px;
+    line-height: 1.6;
+    color: var(--c-ink-2);
+    border-bottom: 1px solid var(--c-cream);
+    margin-bottom: 14px;
+  }
+  .refl-mode-line b { color: var(--c-accent); font-weight: 700; }
+
+  .pullquote {
+    font-family: 'Fraunces', serif;
+    font-size: 17px;
+    font-weight: 500;
+    line-height: 1.35;
+    font-style: italic;
+    padding: 0 10px 12px;
+    color: var(--c-ink);
+  }
+  .pullquote::before { content: '"'; }
+  .pullquote::after { content: '"'; }
+
+  .refl-body {
+    padding: 0 10px 14px;
+    font-size: 12px;
+    line-height: 1.7;
+    color: var(--c-ink);
+  }
+  .refl-body b { font-weight: 700; }
+  .refl-body .small-cap {
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: var(--c-accent);
+    display: block;
+    margin-top: 8px;
+  }
+
+  .lookback {
+    margin: 0 10px;
+    padding: 12px 0 4px;
+    border-top: 2px solid var(--c-rule);
+  }
+  .lookback-cap {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--c-accent);
+    margin-bottom: 6px;
+  }
+  .lookback-text {
+    font-family: 'Fraunces', serif;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.4;
+    color: var(--c-ink);
+    margin-bottom: 8px;
+  }
+  .lookback-link {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--c-accent);
+  }
+
+  /* TOPIC */
+  .topic-back {
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--c-ink-2);
+    font-weight: 600;
+    padding: 8px 10px;
+  }
+  .topic-page-title {
+    font-family: 'Fraunces', serif;
+    font-size: 36px;
+    font-weight: 900;
+    letter-spacing: -0.04em;
+    line-height: 0.95;
+    padding: 4px 10px 6px;
+  }
+  .topic-page-meta {
+    font-size: 10px;
+    color: var(--c-ink-2);
+    padding: 0 10px 14px;
+    border-bottom: 1px solid var(--c-cream);
+    margin-bottom: 14px;
+    letter-spacing: 0.05em;
+  }
+
+  .evo-block {
+    padding: 0 10px 16px;
+  }
+  .evo-cap {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--c-accent);
+    margin-bottom: 8px;
+  }
+  .evo-text {
+    font-family: 'Fraunces', serif;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.55;
+    color: var(--c-ink);
+  }
+  .evo-text b { font-weight: 700; }
+  .evo-text em { font-style: italic; color: var(--c-accent); }
+
+  .data-block {
+    border-top: 2px solid var(--c-rule);
+    padding: 12px 10px 8px;
+  }
+  .data-cap {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--c-ink-2);
+    margin-bottom: 12px;
+  }
+  .tl-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+  .tl-month {
+    font-family: 'Fraunces', serif;
+    font-size: 12px;
+    color: var(--c-ink);
+    width: 32px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+  .tl-bar {
+    height: 4px;
+    background: var(--c-ink);
+  }
+  .tl-count {
+    font-family: 'Fraunces', serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--c-ink);
+    margin-left: auto;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .kw-block {
+    border-top: 1px solid var(--c-cream);
+    padding: 12px 10px 0;
+  }
+  .kw-cap {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--c-ink-2);
+    margin-bottom: 8px;
+  }
+  .cloud {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 12px;
+    font-family: 'Fraunces', serif;
+  }
+  .kw {
+    font-size: 11px;
+    color: var(--c-ink-2);
+    font-weight: 500;
+  }
+  .kw.big {
+    font-size: 18px;
+    color: var(--c-ink);
+    font-weight: 700;
+  }
+  .kw.med {
+    font-size: 14px;
+    color: var(--c-ink);
+    font-weight: 500;
+  }
+</style>
+</head>
+<body>
+
+<div class="lab-header">
+  <div class="lab-tag">Mockup · C · Soft Editorial</div>
+  <div class="lab-title serif">Curio · 杂志风骨架</div>
+  <div class="lab-sub">奶白底 · Fraunces 大字 · 深酒红 accent · 编辑感栏目分割</div>
+</div>
+
+<div class="screens">
+
+  <!-- HOME -->
+  <div class="phone">
+    <div class="phone-label">首页</div>
+    <div class="statusbar"><span>9:41</span><span>● ●</span></div>
+
+    <div class="nameplate">
+      <div class="nameplate-title">CURIO</div>
+      <div class="nameplate-vol">Vol. 23 · MAY 24</div>
+    </div>
+
+    <div class="home-eyebrow">本 月 焦 点</div>
+    <h1 class="home-headline">你最<em>好奇</em><br>这 3 件事</h1>
+    <div class="home-deck">
+      本月你留下了 <b>47 道痕迹</b>，比上月增加 <b>+18%</b>。最深的三条线索如下。
+    </div>
+
+    <div class="capture-row">
+      <div class="cap-btn"><span class="cap-num">01</span>拍照</div>
+      <div class="cap-btn"><span class="cap-num">02</span>截图</div>
+      <div class="cap-btn"><span class="cap-num">03</span>文字</div>
+      <div class="cap-btn"><span class="cap-num">04</span>语音</div>
+    </div>
+
+    <div class="section-rule"></div>
+    <div class="section-cap">主 题 集 合</div>
+
+    <div class="topic-row">
+      <div class="topic-no">01</div>
+      <div class="topic-info">
+        <div class="topic-name">AI 产品交互</div>
+        <div class="topic-byline">since April 8 · 47 days</div>
+      </div>
+      <div class="topic-count">23</div>
+    </div>
+    <div class="topic-row">
+      <div class="topic-no">02</div>
+      <div class="topic-info">
+        <div class="topic-name">字体搭配</div>
+        <div class="topic-byline">since April 29 · 25 days</div>
+      </div>
+      <div class="topic-count">11</div>
+    </div>
+    <div class="topic-row">
+      <div class="topic-no">03</div>
+      <div class="topic-info">
+        <div class="topic-name">初创团队管理</div>
+        <div class="topic-byline">since May 12 · 12 days</div>
+      </div>
+      <div class="topic-count">9</div>
+    </div>
+
+    <div class="home-cta">扔点东西进来</div>
+  </div>
+
+  <!-- REFLECTION -->
+  <div class="phone">
+    <div class="phone-label">今晚的 Curio</div>
+    <div class="statusbar"><span>22:00</span><span>● ●</span></div>
+
+    <div class="nameplate">
+      <div class="nameplate-title">CURIO</div>
+      <div class="nameplate-vol">Evening · 22:00</div>
+    </div>
+
+    <div class="refl-issue">
+      <div class="refl-issue-no">Issue No. 087</div>
+      <div class="refl-date serif">5 月 24 日</div>
+      <div class="refl-dek">6 道痕迹 · 主题 1 · 字数 1,247</div>
+    </div>
+
+    <h1 class="refl-title serif">今晚是<br>一张<em>学习卡</em></h1>
+
+    <div class="refl-mode-line">
+      <b>为什么是学习卡？</b> 今天 6 条里有 5 条都在讨论 onboarding 设计——我替你把它们整成一张学习卡。
+    </div>
+
+    <div class="pullquote serif">让用户在使用中逐步发现功能，而不是一次性灌完。</div>
+
+    <div class="refl-body">
+      <span class="small-cap">核 心 概 念</span>
+      <b>渐进式引导（Progressive Onboarding）</b>——把功能分散在用户使用旅程的不同阶段，根据上下文触发提示。
+
+      <span class="small-cap">今 日 证 据</span>
+      Linear 的 Cmd+K、Mymind 首次拖拽提示、Cursor 右下角小气泡——三个产品都在用同一种范式。
+    </div>
+
+    <div class="lookback">
+      <div class="lookback-cap">上 周 的 你</div>
+      <div class="lookback-text serif">
+        "不要做大而全的 PKM。"
+      </div>
+      <div class="lookback-link">→ 打 开 4 月 12 日 那 条</div>
+    </div>
+  </div>
+
+  <!-- TOPIC -->
+  <div class="phone">
+    <div class="phone-label">主题：AI 产品交互</div>
+    <div class="statusbar"><span>9:41</span><span>● ●</span></div>
+
+    <div class="topic-back">← 主 题 集 合</div>
+
+    <h1 class="topic-page-title serif">AI 产品<br>交互</h1>
+    <div class="topic-page-meta">23 条 · April 8 — Today · 47 days</div>
+
+    <div class="evo-block">
+      <div class="evo-cap">认 知 演 变</div>
+      <div class="evo-text">
+        最早你关注的是 <b>ChatGPT 多轮对话设计</b>；四月底转向了 <em>引导式 onboarding</em>；五月起开始思考 <b>agent UI 的反馈机制</b>。<br><br>
+        兴趣正从"基础对话体验"上升到"agent 交互范式"。
+      </div>
+    </div>
+
+    <div class="data-block">
+      <div class="data-cap">月 度 分 布</div>
+      <div class="tl-row">
+        <div class="tl-month">May</div>
+        <div class="tl-bar" style="width: 75%;"></div>
+        <div class="tl-count">12</div>
+      </div>
+      <div class="tl-row">
+        <div class="tl-month">Apr</div>
+        <div class="tl-bar" style="width: 55%;"></div>
+        <div class="tl-count">9</div>
+      </div>
+      <div class="tl-row">
+        <div class="tl-month">Mar</div>
+        <div class="tl-bar" style="width: 12%;"></div>
+        <div class="tl-count">2</div>
+      </div>
+    </div>
+
+    <div class="kw-block">
+      <div class="kw-cap">关 键 词</div>
+      <div class="cloud">
+        <span class="kw big">onboarding</span>
+        <span class="kw big">agent UI</span>
+        <span class="kw med">Cmd+K</span>
+        <span class="kw med">反馈机制</span>
+        <span class="kw">多轮对话</span>
+        <span class="kw">引导式</span>
+        <span class="kw">渐进式</span>
+        <span class="kw">prompt</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

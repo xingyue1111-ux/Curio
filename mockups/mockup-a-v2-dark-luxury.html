@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Curio · A v2 · Dark Luxury</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    /* Core palette */
+    --c-bg-deep: #0A0F0C;
+    --c-bg-1: #0F1612;
+    --c-bg-2: #14211B;
+    --c-bg-3: #1E3328;
+    --c-ink: #FFFFFF;
+    --c-ink-2: #B3BAB5;
+    --c-ink-3: #6B736E;
+    --c-rule: rgba(255,255,255,0.08);
+
+    /* Accent blocks */
+    --c-lime: #B0F263;
+    --c-violet: #9B9CFA;
+    --c-peach: #E8946A;
+    --c-forest: #4D7A6E;
+
+    /* Surface dark cards */
+    --c-card: #16201C;
+    --c-card-2: #1A2520;
+    --c-glass: rgba(255,255,255,0.04);
+    --c-border: rgba(255,255,255,0.06);
+
+    --r-card: 28px;
+    --r-card-sm: 18px;
+    --r-pill: 999px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    font-family: 'Inter', -apple-system, 'PingFang SC', sans-serif;
+    background: var(--c-bg-deep);
+    color: var(--c-ink);
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+  }
+  body {
+    padding: 40px 20px;
+    background:
+      radial-gradient(ellipse at top left, rgba(176, 242, 99, 0.04) 0%, transparent 50%),
+      radial-gradient(ellipse at bottom right, rgba(155, 156, 250, 0.03) 0%, transparent 50%),
+      var(--c-bg-deep);
+  }
+
+  /* Lab header */
+  .lab-header {
+    max-width: 1280px;
+    margin: 0 auto 56px;
+    text-align: center;
+  }
+  .lab-tag {
+    display: inline-block;
+    padding: 6px 14px;
+    background: var(--c-lime);
+    color: var(--c-bg-1);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    border-radius: var(--r-pill);
+    margin-bottom: 14px;
+    text-transform: uppercase;
+  }
+  .lab-title {
+    font-size: 40px;
+    font-weight: 900;
+    letter-spacing: -0.03em;
+    line-height: 1;
+  }
+  .lab-sub {
+    color: var(--c-ink-2);
+    margin-top: 10px;
+    font-size: 15px;
+    letter-spacing: 0.01em;
+  }
+
+  /* Floating decorations (like the screenshot) */
+  .deco-dots {
+    position: absolute;
+    width: 16px; height: 16px;
+    transform: rotate(45deg);
+    pointer-events: none;
+  }
+  .deco-dots.violet { background: var(--c-violet); }
+  .deco-dots.peach { background: var(--c-peach); }
+  .deco-dots.black { background: var(--c-bg-1); }
+
+  .screens {
+    max-width: 1280px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 28px;
+  }
+  @media (max-width: 1024px) { .screens { grid-template-columns: 1fr; } }
+
+  .phone {
+    background: linear-gradient(160deg, var(--c-bg-3) 0%, var(--c-bg-2) 35%, var(--c-bg-1) 70%, var(--c-bg-deep) 100%);
+    border-radius: 38px;
+    padding: 16px 14px;
+    box-shadow:
+      0 32px 64px rgba(0,0,0,0.5),
+      0 0 0 1px rgba(255,255,255,0.04);
+    aspect-ratio: 9 / 19.5;
+    overflow: hidden;
+    position: relative;
+  }
+  .phone::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -30%;
+    width: 80%;
+    height: 60%;
+    background: radial-gradient(ellipse, rgba(176, 242, 99, 0.18) 0%, transparent 60%);
+    filter: blur(40px);
+    pointer-events: none;
+  }
+  .phone-label {
+    position: absolute;
+    top: -28px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--c-ink);
+    white-space: nowrap;
+  }
+  .statusbar {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--c-ink);
+    padding: 6px 14px 16px;
+    position: relative;
+    z-index: 2;
+  }
+
+  /* Octagon shape via clip-path */
+  .octagon {
+    clip-path: polygon(30% 0, 70% 0, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0 70%, 0 30%);
+  }
+  .hex {
+    clip-path: polygon(50% 0, 100% 28%, 100% 72%, 50% 100%, 0 72%, 0 28%);
+  }
+
+  /* HOME SCREEN */
+  .home-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding: 8px 10px 18px;
+    position: relative;
+    z-index: 2;
+  }
+  .home-dots {
+    color: var(--c-ink);
+    font-size: 22px;
+    line-height: 0.5;
+    letter-spacing: 1px;
+  }
+  .home-avatar {
+    width: 36px; height: 36px;
+    background: linear-gradient(135deg, var(--c-lime) 0%, var(--c-forest) 100%);
+    border-radius: 50%;
+    border: 2px solid rgba(255,255,255,0.15);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800;
+    font-size: 13px;
+    color: var(--c-bg-1);
+  }
+  .home-greeting {
+    padding: 0 14px;
+    margin-bottom: 6px;
+    position: relative;
+    z-index: 2;
+  }
+  .home-hi {
+    font-size: 14px;
+    color: var(--c-ink-2);
+    font-weight: 500;
+    margin-bottom: 4px;
+  }
+  .home-title {
+    font-size: 30px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+  }
+  .home-cta-link {
+    padding: 16px 14px 0;
+    position: relative;
+    z-index: 2;
+  }
+  .cta-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--c-ink);
+    font-size: 13px;
+    font-weight: 600;
+    padding: 8px 14px;
+    border: 1px solid var(--c-border);
+    border-radius: var(--r-pill);
+    background: var(--c-glass);
+    backdrop-filter: blur(10px);
+  }
+  .cta-plus {
+    width: 18px; height: 18px;
+    border: 1.5px solid var(--c-ink);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px;
+    line-height: 1;
+    font-weight: 700;
+  }
+
+  /* Octagon grid - signature element */
+  .oct-grid {
+    margin: 22px 14px 0;
+    position: relative;
+    height: 360px;
+  }
+  .oct {
+    position: absolute;
+    aspect-ratio: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 12px;
+    text-align: center;
+  }
+  .oct-arrow {
+    font-size: 18px;
+    font-weight: 800;
+    margin-bottom: 8px;
+    color: var(--c-bg-1);
+  }
+  .oct-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: rgba(15, 22, 18, 0.7);
+    margin-bottom: 2px;
+  }
+  .oct-num {
+    font-size: 24px;
+    font-weight: 900;
+    color: var(--c-bg-1);
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+  }
+  .oct.lime { background: var(--c-lime); width: 170px; top: 0; left: 0; }
+  .oct.violet { background: var(--c-violet); width: 140px; top: 12px; right: 0; }
+  .oct.peach { background: var(--c-peach); width: 150px; top: 175px; left: 18px; }
+  .oct.forest { background: var(--c-forest); width: 130px; top: 195px; right: 8px; }
+  .oct.forest .oct-label,
+  .oct.forest .oct-num,
+  .oct.forest .oct-arrow {
+    color: var(--c-ink);
+  }
+  .oct.forest .oct-label { color: rgba(255,255,255,0.7); }
+
+  /* connectors between octagons */
+  .connector {
+    position: absolute;
+    width: 6px;
+    background: linear-gradient(180deg, currentColor, transparent);
+    z-index: 0;
+  }
+
+  /* REFLECTION SCREEN */
+  .refl-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 14px 22px;
+    position: relative;
+    z-index: 2;
+  }
+  .refl-back {
+    color: var(--c-ink-2);
+    font-size: 14px;
+    font-weight: 500;
+  }
+  .refl-settings {
+    width: 36px; height: 36px;
+    border: 1px solid var(--c-border);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--c-glass);
+  }
+  .refl-eyebrow {
+    padding: 0 14px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--c-lime);
+    margin-bottom: 8px;
+    position: relative;
+    z-index: 2;
+  }
+  .refl-title {
+    padding: 0 14px;
+    font-size: 36px;
+    font-weight: 900;
+    letter-spacing: -0.03em;
+    line-height: 0.95;
+    margin-bottom: 6px;
+    position: relative;
+    z-index: 2;
+  }
+  .refl-meta {
+    padding: 0 14px 24px;
+    font-size: 13px;
+    color: var(--c-ink-2);
+    font-weight: 500;
+    position: relative;
+    z-index: 2;
+  }
+  .refl-meta b { color: var(--c-lime); font-weight: 700; }
+
+  .refl-mode-card {
+    margin: 0 14px 14px;
+    background: var(--c-lime);
+    color: var(--c-bg-1);
+    border-radius: var(--r-card);
+    padding: 18px 20px;
+  }
+  .refl-mode-tag {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    color: var(--c-bg-1);
+  }
+  .refl-mode-q {
+    font-size: 22px;
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    margin-bottom: 10px;
+  }
+  .refl-mode-reason {
+    font-size: 12px;
+    line-height: 1.5;
+    color: rgba(15, 22, 18, 0.7);
+    font-weight: 500;
+  }
+
+  .refl-body {
+    margin: 0 14px 14px;
+    background: var(--c-card);
+    border: 1px solid var(--c-border);
+    border-radius: var(--r-card-sm);
+    padding: 16px 18px;
+  }
+  .refl-h {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--c-ink-2);
+    margin-bottom: 8px;
+  }
+  .refl-h-num {
+    color: var(--c-lime);
+    margin-right: 6px;
+  }
+  .refl-body-text {
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--c-ink);
+  }
+  .refl-body-text b { font-weight: 700; }
+
+  .lookback {
+    margin: 0 14px;
+    background: linear-gradient(135deg, var(--c-peach) 0%, #D17A56 100%);
+    color: var(--c-bg-1);
+    border-radius: var(--r-card-sm);
+    padding: 16px 18px;
+  }
+  .lookback-tag {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .lookback-text {
+    font-size: 14px;
+    line-height: 1.5;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  .lookback-link {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    color: var(--c-bg-1);
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  /* TOPIC SCREEN */
+  .topic-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 14px 18px;
+    position: relative;
+    z-index: 2;
+  }
+  .topic-back {
+    color: var(--c-ink-2);
+    font-size: 13px;
+    font-weight: 500;
+  }
+  .topic-action {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: var(--c-glass);
+    border: 1px solid var(--c-border);
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  .topic-hero {
+    padding: 0 14px 4px;
+    position: relative;
+    z-index: 2;
+  }
+  .topic-eyebrow {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--c-lime);
+    margin-bottom: 8px;
+  }
+  .topic-name {
+    font-size: 36px;
+    font-weight: 900;
+    letter-spacing: -0.03em;
+    line-height: 0.95;
+    margin-bottom: 12px;
+  }
+
+  .topic-big-stat {
+    padding: 0 14px 18px;
+    display: flex;
+    gap: 18px;
+    align-items: flex-end;
+    position: relative;
+    z-index: 2;
+  }
+  .topic-big {
+    font-size: 56px;
+    font-weight: 900;
+    color: var(--c-lime);
+    letter-spacing: -0.04em;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+  .topic-big-sub {
+    font-size: 11px;
+    color: var(--c-ink-2);
+    line-height: 1.4;
+    padding-bottom: 6px;
+  }
+  .topic-big-sub b { color: var(--c-ink); font-weight: 700; }
+
+  .evo-card {
+    margin: 0 14px 12px;
+    background: var(--c-card);
+    border: 1px solid var(--c-border);
+    border-radius: var(--r-card-sm);
+    padding: 16px 18px;
+    position: relative;
+    z-index: 2;
+  }
+  .evo-tag {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--c-violet);
+    margin-bottom: 8px;
+  }
+  .evo-text {
+    font-size: 12px;
+    line-height: 1.6;
+    color: var(--c-ink);
+  }
+  .evo-text b { font-weight: 700; color: var(--c-lime); }
+
+  .chart-card {
+    margin: 0 14px;
+    background: var(--c-card);
+    border: 1px solid var(--c-border);
+    border-radius: var(--r-card-sm);
+    padding: 16px 18px 12px;
+  }
+  .chart-tag {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--c-ink-2);
+    margin-bottom: 14px;
+  }
+  .chart-bars {
+    display: flex;
+    align-items: flex-end;
+    height: 60px;
+    gap: 4px;
+    margin-bottom: 8px;
+  }
+  .bar {
+    flex: 1;
+    background: var(--c-lime);
+    border-radius: 2px;
+    min-height: 8px;
+  }
+  .bar.dim { background: var(--c-forest); opacity: 0.7; }
+  .chart-axis {
+    display: flex;
+    justify-content: space-between;
+    font-size: 9px;
+    color: var(--c-ink-3);
+    font-weight: 600;
+    letter-spacing: 0.05em;
+  }
+</style>
+</head>
+<body>
+
+<div class="lab-header">
+  <div class="lab-tag">MOCKUP · A v2 · DARK LUXURY</div>
+  <div class="lab-title">Curio · 暗色 fintech 调性</div>
+  <div class="lab-sub">按你发的两张参考图重做 · 深绿黑 mesh + 4 色 octagon + 大字粗体</div>
+</div>
+
+<div class="screens">
+
+  <!-- HOME -->
+  <div class="phone">
+    <div class="phone-label">首页</div>
+    <div class="statusbar"><span>9:41</span><span>●●●</span></div>
+
+    <div class="home-top">
+      <div class="home-dots">···</div>
+      <div class="home-avatar">Y</div>
+    </div>
+
+    <div class="home-greeting">
+      <div class="home-hi">Hi Yuri,</div>
+      <div class="home-title">be curious<br>about today</div>
+    </div>
+
+    <div class="home-cta-link">
+      <div class="cta-pill">
+        <span class="cta-plus">+</span>
+        扔点东西进来
+      </div>
+    </div>
+
+    <div class="oct-grid">
+      <div class="oct octagon lime">
+        <div class="oct-arrow">↙</div>
+        <div class="oct-label">AI 产品交互</div>
+        <div class="oct-num">23</div>
+      </div>
+      <div class="oct octagon violet">
+        <div class="oct-arrow">↗</div>
+        <div class="oct-label">字体搭配</div>
+        <div class="oct-num">11</div>
+      </div>
+      <div class="oct octagon peach">
+        <div class="oct-arrow">↘</div>
+        <div class="oct-label">初创管理</div>
+        <div class="oct-num">9</div>
+      </div>
+      <div class="oct octagon forest">
+        <div class="oct-arrow">↗</div>
+        <div class="oct-label">生活观察</div>
+        <div class="oct-num">7</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- REFLECTION -->
+  <div class="phone">
+    <div class="phone-label">今晚的 Curio</div>
+    <div class="statusbar"><span>22:00</span><span>●●●</span></div>
+
+    <div class="refl-top">
+      <div class="refl-back">← 返回</div>
+      <div class="refl-settings">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <circle cx="7" cy="7" r="2.5" stroke="#fff" stroke-width="1.5"/>
+          <path d="M7 1.5v2M7 10.5v2M1.5 7h2M10.5 7h2" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </div>
+    </div>
+
+    <div class="refl-eyebrow">5 月 24 日 · 学习卡态</div>
+    <div class="refl-title">今晚的<br>轨迹</div>
+    <div class="refl-meta">你留下了 <b>6 道痕迹</b> · 主题 1</div>
+
+    <div class="refl-mode-card">
+      <div class="refl-mode-tag">▣ 学 习 卡</div>
+      <div class="refl-mode-q">渐进式引导，<br>是什么？</div>
+      <div class="refl-mode-reason">
+        让用户在使用中逐步发现功能，而不是一次性灌完所有功能介绍。今天 6 条里有 5 条都在围绕这件事打转。
+      </div>
+    </div>
+
+    <div class="refl-body">
+      <div class="refl-h"><span class="refl-h-num">02</span>今 日 证 据</div>
+      <div class="refl-body-text">
+        Linear 的 <b>Cmd+K</b>、Mymind 首次拖拽提示、Cursor 右下角小气泡——三个产品都在用同一种范式。
+      </div>
+    </div>
+
+    <div class="lookback">
+      <div class="lookback-tag">上 周 的 你</div>
+      <div class="lookback-text">"不要做大而全的 PKM"</div>
+      <div class="lookback-link">→ 打开 4 月 12 日那条</div>
+    </div>
+  </div>
+
+  <!-- TOPIC -->
+  <div class="phone">
+    <div class="phone-label">主题：AI 产品交互</div>
+    <div class="statusbar"><span>9:41</span><span>●●●</span></div>
+
+    <div class="topic-top">
+      <div class="topic-back">← 主题集合</div>
+      <div class="topic-action">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <circle cx="6" cy="6" r="4.5" stroke="#fff" stroke-width="1.5"/>
+          <path d="M9.5 9.5l3 3" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </div>
+    </div>
+
+    <div class="topic-hero">
+      <div class="topic-eyebrow">主 题 集 合 · 01</div>
+      <div class="topic-name">AI 产品<br>交互</div>
+    </div>
+
+    <div class="topic-big-stat">
+      <div class="topic-big">23</div>
+      <div class="topic-big-sub">
+        <b>4 月 8 日</b>至今<br>
+        跨度 <b>47 天</b>
+      </div>
+    </div>
+
+    <div class="evo-card">
+      <div class="evo-tag">认 知 演 变</div>
+      <div class="evo-text">
+        最早你关注 <b>ChatGPT 多轮对话</b>；4 月底转向 <b>引导式 onboarding</b>；5 月起开始思考 <b>agent UI 的反馈机制</b>。<br><br>
+        兴趣正从基础体验上升到 agent 范式。
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-tag">月 度 分 布</div>
+      <div class="chart-bars">
+        <div class="bar dim" style="height: 15%"></div>
+        <div class="bar dim" style="height: 12%"></div>
+        <div class="bar dim" style="height: 20%"></div>
+        <div class="bar" style="height: 65%"></div>
+        <div class="bar" style="height: 78%"></div>
+        <div class="bar" style="height: 100%"></div>
+      </div>
+      <div class="chart-axis">
+        <span>3月</span><span>4月初</span><span>4月中</span><span>4月末</span><span>5月初</span><span>5月今</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

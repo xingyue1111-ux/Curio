@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Curio · A v3 · Dark Editorial Collection</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700;9..144,900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --c-bg-deep: #0A0F0C;
+    --c-bg-1: #0F1612;
+    --c-bg-2: #14211B;
+    --c-bg-3: #1E3328;
+    --c-ink: #FFFFFF;
+    --c-ink-2: #B3BAB5;
+    --c-ink-3: #6B736E;
+    --c-ink-4: #4A5450;
+    --c-rule: rgba(255,255,255,0.06);
+
+    --c-lime: #B0F263;
+    --c-lime-soft: rgba(176, 242, 99, 0.12);
+    --c-violet: #9B9CFA;
+    --c-peach: #E8946A;
+    --c-forest: #4D7A6E;
+
+    --c-card: #16201C;
+    --c-card-2: #1A2520;
+    --c-card-3: #1F2A25;
+    --c-glass: rgba(255,255,255,0.04);
+    --c-border: rgba(255,255,255,0.06);
+
+    --r-card: 24px;
+    --r-card-sm: 16px;
+    --r-pill: 999px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    font-family: 'Inter', -apple-system, 'PingFang SC', sans-serif;
+    background: var(--c-bg-deep);
+    color: var(--c-ink);
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+  }
+  body {
+    padding: 40px 20px;
+    background:
+      radial-gradient(ellipse at top left, rgba(176, 242, 99, 0.04) 0%, transparent 60%),
+      var(--c-bg-deep);
+  }
+  .serif {
+    font-family: 'Fraunces', 'Times New Roman', serif;
+    font-feature-settings: 'liga' on;
+  }
+
+  .lab-header {
+    max-width: 1280px;
+    margin: 0 auto 56px;
+    text-align: center;
+  }
+  .lab-tag {
+    display: inline-block;
+    padding: 6px 14px;
+    background: var(--c-lime);
+    color: var(--c-bg-1);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    border-radius: var(--r-pill);
+    margin-bottom: 14px;
+    text-transform: uppercase;
+  }
+  .lab-title {
+    font-size: 40px;
+    font-weight: 900;
+    letter-spacing: -0.03em;
+    line-height: 1;
+  }
+  .lab-sub {
+    color: var(--c-ink-2);
+    margin-top: 10px;
+    font-size: 15px;
+  }
+
+  .screens {
+    max-width: 1280px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 28px;
+  }
+  @media (max-width: 1024px) { .screens { grid-template-columns: 1fr; } }
+
+  .phone {
+    background: linear-gradient(180deg, var(--c-bg-3) 0%, var(--c-bg-2) 25%, var(--c-bg-1) 60%, var(--c-bg-deep) 100%);
+    border-radius: 38px;
+    padding: 16px 0 0;
+    box-shadow:
+      0 32px 64px rgba(0,0,0,0.5),
+      0 0 0 1px rgba(255,255,255,0.04);
+    aspect-ratio: 9 / 19.5;
+    overflow: hidden;
+    position: relative;
+  }
+  .phone::before {
+    content: '';
+    position: absolute;
+    top: -40%;
+    right: -30%;
+    width: 80%;
+    height: 60%;
+    background: radial-gradient(ellipse, rgba(176, 242, 99, 0.18) 0%, transparent 60%);
+    filter: blur(40px);
+    pointer-events: none;
+  }
+  .phone-label {
+    position: absolute;
+    top: -28px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--c-ink);
+    white-space: nowrap;
+  }
+  .statusbar {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--c-ink);
+    padding: 6px 18px 0;
+    position: relative;
+    z-index: 2;
+  }
+
+  .scroll-body {
+    padding: 14px 14px 24px;
+    position: relative;
+    z-index: 2;
+    height: calc(100% - 30px);
+    overflow: hidden;
+  }
+
+  /* HOME */
+  .home-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 22px;
+  }
+  .home-avatar {
+    width: 38px; height: 38px;
+    background: linear-gradient(135deg, var(--c-lime) 0%, var(--c-forest) 100%);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800;
+    font-size: 14px;
+    color: var(--c-bg-1);
+  }
+  .icon-pill {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    background: var(--c-glass);
+    border: 1px solid var(--c-border);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--c-ink);
+  }
+
+  .home-hi {
+    font-size: 13px;
+    color: var(--c-ink-2);
+    font-weight: 500;
+    margin-bottom: 4px;
+  }
+  .home-title {
+    font-size: 32px;
+    font-weight: 900;
+    letter-spacing: -0.03em;
+    line-height: 1.05;
+    margin-bottom: 14px;
+  }
+  .home-title em {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-weight: 600;
+    color: var(--c-lime);
+  }
+
+  .home-stats {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 24px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--c-ink-2);
+    letter-spacing: 0.02em;
+  }
+  .stat-chip {
+    padding: 5px 10px;
+    background: var(--c-glass);
+    border: 1px solid var(--c-border);
+    border-radius: var(--r-pill);
+  }
+  .stat-chip b { color: var(--c-lime); font-weight: 800; margin-right: 3px; }
+
+  .home-section {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--c-ink-3);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .home-section::after {
+    content: ''; flex: 1; height: 1px;
+    background: var(--c-rule);
+  }
+
+  /* Collection cards — gallery list */
+  .col-card {
+    background: var(--c-card);
+    border: 1px solid var(--c-border);
+    border-radius: var(--r-card-sm);
+    padding: 14px 16px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    position: relative;
+    overflow: hidden;
+  }
+  .col-card.feature {
+    background: var(--c-lime);
+    border: none;
+  }
+  .col-card.feature .col-no,
+  .col-card.feature .col-name,
+  .col-card.feature .col-meta,
+  .col-card.feature .col-count {
+    color: var(--c-bg-1);
+  }
+  .col-card.feature .col-meta { opacity: 0.7; }
+  .col-no {
+    font-family: 'Fraunces', serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--c-ink-3);
+    font-variant-numeric: tabular-nums;
+    width: 22px;
+  }
+  .col-info { flex: 1; }
+  .col-name {
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--c-ink);
+    margin-bottom: 2px;
+  }
+  .col-meta {
+    font-size: 11px;
+    color: var(--c-ink-3);
+    font-weight: 500;
+    letter-spacing: 0.01em;
+  }
+  .col-count {
+    font-size: 22px;
+    font-weight: 900;
+    color: var(--c-lime);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+  }
+
+  .floating-capture {
+    position: absolute;
+    bottom: 22px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--c-lime);
+    color: var(--c-bg-1);
+    padding: 13px 22px;
+    border-radius: var(--r-pill);
+    font-size: 13px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow:
+      0 12px 32px rgba(176, 242, 99, 0.3),
+      0 4px 12px rgba(0,0,0,0.3);
+    z-index: 5;
+  }
+  .floating-capture .plus {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: var(--c-bg-1);
+    color: var(--c-lime);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 800; line-height: 1;
+  }
+
+  /* REFLECTION */
+  .refl-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 28px;
+  }
+  .refl-back {
+    color: var(--c-ink-2);
+    font-size: 14px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .refl-eyebrow {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--c-lime);
+    margin-bottom: 10px;
+  }
+  .refl-title {
+    font-size: 36px;
+    font-weight: 900;
+    letter-spacing: -0.03em;
+    line-height: 0.98;
+    margin-bottom: 14px;
+  }
+  .refl-title em {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-weight: 500;
+    color: var(--c-lime);
+  }
+  .refl-meta {
+    font-size: 12px;
+    color: var(--c-ink-2);
+    font-weight: 500;
+    margin-bottom: 22px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid var(--c-rule);
+  }
+  .refl-meta b { color: var(--c-ink); font-weight: 700; }
+
+  .refl-mode-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--c-bg-1);
+    background: var(--c-lime);
+    padding: 4px 10px;
+    border-radius: var(--r-pill);
+    margin-bottom: 12px;
+  }
+  .refl-mode-explain {
+    font-size: 13px;
+    line-height: 1.55;
+    color: var(--c-ink-2);
+    margin-bottom: 20px;
+  }
+  .refl-mode-explain b { color: var(--c-ink); font-weight: 600; }
+
+  .pullquote {
+    font-family: 'Fraunces', serif;
+    font-size: 22px;
+    font-weight: 500;
+    font-style: italic;
+    line-height: 1.25;
+    color: var(--c-ink);
+    margin: 18px 0;
+    padding-left: 14px;
+    border-left: 2px solid var(--c-lime);
+  }
+  .refl-section-tag {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--c-ink-3);
+    margin: 16px 0 8px;
+  }
+  .refl-section-tag b { color: var(--c-lime); }
+  .refl-body {
+    font-size: 13px;
+    line-height: 1.65;
+    color: var(--c-ink-2);
+    margin-bottom: 22px;
+  }
+  .refl-body b { color: var(--c-ink); font-weight: 600; }
+
+  .lookback {
+    background: linear-gradient(135deg, var(--c-card-3) 0%, var(--c-bg-2) 100%);
+    border: 1px solid rgba(176, 242, 99, 0.25);
+    border-radius: var(--r-card-sm);
+    padding: 16px 18px;
+    position: relative;
+  }
+  .lookback::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--c-lime) 0%, transparent 100%);
+    border-radius: var(--r-card-sm) var(--r-card-sm) 0 0;
+  }
+  .lookback-tag {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--c-lime);
+    margin-bottom: 8px;
+  }
+  .lookback-text {
+    font-family: 'Fraunces', serif;
+    font-size: 17px;
+    font-weight: 500;
+    font-style: italic;
+    line-height: 1.4;
+    color: var(--c-ink);
+    margin-bottom: 10px;
+  }
+  .lookback-link {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--c-lime);
+    letter-spacing: 0.02em;
+  }
+
+  /* TOPIC SCREEN */
+  .topic-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 22px;
+  }
+
+  .topic-eyebrow {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--c-lime);
+    margin-bottom: 8px;
+  }
+  .topic-name {
+    font-size: 38px;
+    font-weight: 900;
+    letter-spacing: -0.03em;
+    line-height: 0.95;
+    margin-bottom: 16px;
+  }
+  .topic-name em {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-weight: 500;
+    color: var(--c-lime);
+  }
+
+  .topic-figure {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    margin-bottom: 22px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid var(--c-rule);
+  }
+  .topic-big-num {
+    font-size: 64px;
+    font-weight: 900;
+    color: var(--c-lime);
+    letter-spacing: -0.04em;
+    line-height: 0.9;
+    font-variant-numeric: tabular-nums;
+  }
+  .topic-big-sub {
+    font-size: 11px;
+    color: var(--c-ink-2);
+    line-height: 1.4;
+    padding-bottom: 8px;
+  }
+  .topic-big-sub b { color: var(--c-ink); font-weight: 700; }
+
+  .evo-block {
+    margin-bottom: 22px;
+  }
+  .evo-tag {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--c-lime);
+    margin-bottom: 10px;
+  }
+  .evo-text {
+    font-family: 'Fraunces', serif;
+    font-size: 14px;
+    line-height: 1.55;
+    color: var(--c-ink);
+    font-weight: 400;
+  }
+  .evo-text b { font-weight: 600; color: var(--c-lime); }
+
+  .timeline-block {
+    margin-bottom: 18px;
+  }
+  .timeline-tag {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--c-ink-3);
+    margin-bottom: 12px;
+  }
+  .tl-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+  .tl-month {
+    font-size: 11px;
+    color: var(--c-ink-2);
+    width: 28px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+  .tl-bar {
+    height: 6px;
+    background: var(--c-lime);
+    border-radius: 3px;
+  }
+  .tl-bar.dim {
+    background: var(--c-forest);
+    opacity: 0.6;
+  }
+  .tl-count {
+    font-size: 12px;
+    font-weight: 800;
+    color: var(--c-ink);
+    margin-left: auto;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .kw-block {
+    border-top: 1px solid var(--c-rule);
+    padding-top: 16px;
+  }
+  .kw-tag {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--c-ink-3);
+    margin-bottom: 10px;
+  }
+  .kw-cloud {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+  .kw {
+    font-size: 11px;
+    padding: 4px 9px;
+    border-radius: var(--r-pill);
+    background: var(--c-glass);
+    border: 1px solid var(--c-border);
+    color: var(--c-ink-2);
+    font-weight: 500;
+  }
+  .kw.big {
+    background: var(--c-lime);
+    color: var(--c-bg-1);
+    font-weight: 700;
+    border-color: var(--c-lime);
+  }
+</style>
+</head>
+<body>
+
+<div class="lab-header">
+  <div class="lab-tag">MOCKUP · A v3 · DARK EDITORIAL COLLECTION</div>
+  <div class="lab-title">Curio · 暗色编辑收藏</div>
+  <div class="lab-sub">暗绿黑底 + 柠檬绿 accent · 大字粗体 + Fraunces 斜体点缀 · 列表/翻阅式 · 去 fintech 感</div>
+</div>
+
+<div class="screens">
+
+  <!-- HOME -->
+  <div class="phone">
+    <div class="phone-label">首页</div>
+    <div class="statusbar"><span>9:41</span><span>●●●</span></div>
+
+    <div class="scroll-body">
+      <div class="home-bar">
+        <div class="home-avatar">Y</div>
+        <div class="icon-pill">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <circle cx="7" cy="7" r="5" stroke="#fff" stroke-width="1.5"/>
+            <path d="M11 11l3 3" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="home-hi">Hi Yuri,</div>
+      <h1 class="home-title">本月你<br>最<em>好奇</em>的事</h1>
+
+      <div class="home-stats">
+        <div class="stat-chip"><b>47</b>条本月</div>
+        <div class="stat-chip"><b>+18%</b>比上月</div>
+        <div class="stat-chip"><b>3</b>个主题</div>
+      </div>
+
+      <div class="home-section">主 题 集 合</div>
+
+      <div class="col-card feature">
+        <div class="col-no">01</div>
+        <div class="col-info">
+          <div class="col-name">AI 产品交互</div>
+          <div class="col-meta">since 4 月 8 日 · 47 天</div>
+        </div>
+        <div class="col-count">23</div>
+      </div>
+
+      <div class="col-card">
+        <div class="col-no">02</div>
+        <div class="col-info">
+          <div class="col-name">字体搭配</div>
+          <div class="col-meta">since 4 月 29 日 · 25 天</div>
+        </div>
+        <div class="col-count">11</div>
+      </div>
+
+      <div class="col-card">
+        <div class="col-no">03</div>
+        <div class="col-info">
+          <div class="col-name">初创团队管理</div>
+          <div class="col-meta">since 5 月 12 日 · 12 天</div>
+        </div>
+        <div class="col-count">9</div>
+      </div>
+
+      <div class="col-card">
+        <div class="col-no">04</div>
+        <div class="col-info">
+          <div class="col-name">生活观察</div>
+          <div class="col-meta">since 5 月 18 日 · 6 天</div>
+        </div>
+        <div class="col-count">7</div>
+      </div>
+    </div>
+
+    <div class="floating-capture">
+      <span class="plus">+</span>
+      扔点东西进来
+    </div>
+  </div>
+
+  <!-- REFLECTION -->
+  <div class="phone">
+    <div class="phone-label">今晚的 Curio</div>
+    <div class="statusbar"><span>22:00</span><span>●●●</span></div>
+
+    <div class="scroll-body">
+      <div class="refl-top">
+        <div class="refl-back">← 返回</div>
+        <div class="icon-pill">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <circle cx="7" cy="7" r="2.5" stroke="#fff" stroke-width="1.5"/>
+            <path d="M7 1.5v2M7 10.5v2M1.5 7h2M10.5 7h2" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="refl-eyebrow">Issue 087 · 5 月 24 日</div>
+      <h1 class="refl-title">今晚是<br>一张<em>学习卡</em></h1>
+      <div class="refl-meta">你留下了 <b>6 道痕迹</b> · 主题 1</div>
+
+      <div class="refl-mode-tag">▣ 学 习 卡 态</div>
+      <div class="refl-mode-explain">
+        今天 6 条里有 <b>5 条</b>都在讨论 onboarding 设计，我替你整成了一张学习卡。
+      </div>
+
+      <div class="pullquote">让用户在使用中逐步发现功能，而不是一次性灌完。</div>
+
+      <div class="refl-section-tag"><b>02</b> · 今 日 证 据</div>
+      <div class="refl-body">
+        <b>Linear Cmd+K</b> · Mymind 首次拖拽提示 · <b>Cursor 右下角小气泡</b>——三个产品都在用同一种范式。
+      </div>
+
+      <div class="lookback">
+        <div class="lookback-tag">上 周 的 你</div>
+        <div class="lookback-text">"不要做大而全的 PKM。"</div>
+        <div class="lookback-link">→ 打开 4 月 12 日那条</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOPIC -->
+  <div class="phone">
+    <div class="phone-label">主题：AI 产品交互</div>
+    <div class="statusbar"><span>9:41</span><span>●●●</span></div>
+
+    <div class="scroll-body">
+      <div class="topic-top">
+        <div class="refl-back">← 主题集合</div>
+        <div class="icon-pill">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M3 7h8M7 3v8" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="topic-eyebrow">主 题 集 合 · 01</div>
+      <h1 class="topic-name">AI <em>产品</em><br>交互</h1>
+
+      <div class="topic-figure">
+        <div class="topic-big-num">23</div>
+        <div class="topic-big-sub">
+          since <b>4 月 8 日</b><br>
+          跨度 <b>47 天</b>
+        </div>
+      </div>
+
+      <div class="evo-block">
+        <div class="evo-tag">认 知 演 变</div>
+        <div class="evo-text">
+          最早你关注 <b>ChatGPT 多轮对话</b>；4 月底转向 <b>引导式 onboarding</b>；5 月起开始思考 <b>agent UI 的反馈机制</b>。
+        </div>
+      </div>
+
+      <div class="timeline-block">
+        <div class="timeline-tag">月 度 分 布</div>
+        <div class="tl-row">
+          <div class="tl-month">5月</div>
+          <div class="tl-bar" style="width: 75%;"></div>
+          <div class="tl-count">12</div>
+        </div>
+        <div class="tl-row">
+          <div class="tl-month">4月</div>
+          <div class="tl-bar dim" style="width: 55%;"></div>
+          <div class="tl-count">9</div>
+        </div>
+        <div class="tl-row">
+          <div class="tl-month">3月</div>
+          <div class="tl-bar dim" style="width: 12%;"></div>
+          <div class="tl-count">2</div>
+        </div>
+      </div>
+
+      <div class="kw-block">
+        <div class="kw-tag">关 键 词</div>
+        <div class="kw-cloud">
+          <span class="kw big">onboarding</span>
+          <span class="kw big">agent UI</span>
+          <span class="kw">Cmd+K</span>
+          <span class="kw">反馈机制</span>
+          <span class="kw">多轮对话</span>
+          <span class="kw">渐进式</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

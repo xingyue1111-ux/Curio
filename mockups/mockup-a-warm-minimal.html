@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Curio · A · Warm Minimal</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --c-bg: #FFF7E8;
+    --c-bg-grad-from: #FFD571;
+    --c-bg-grad-to: #C8E6C0;
+    --c-card: #FFFFFF;
+    --c-card-soft: #FFFAF0;
+    --c-ink: #1A1A1A;
+    --c-ink-2: #5A5A5A;
+    --c-ink-3: #8E8E8E;
+    --c-accent: #1A1A1A;
+    --c-orange: #FFB95E;
+    --c-yellow: #FFD571;
+    --c-green: #B5DBC3;
+    --c-pink: #FFCFB7;
+    --r-card: 20px;
+    --r-pill: 999px;
+    --shadow-soft: 0 4px 24px rgba(255, 165, 80, 0.08), 0 1px 3px rgba(0,0,0,0.04);
+    --shadow-card: 0 8px 32px rgba(255, 165, 80, 0.12), 0 2px 6px rgba(0,0,0,0.06);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'PingFang SC', sans-serif;
+    background: var(--c-bg);
+    color: var(--c-ink);
+    -webkit-font-smoothing: antialiased;
+    padding: 40px 20px;
+  }
+  .lab-header {
+    max-width: 1280px;
+    margin: 0 auto 48px;
+    text-align: center;
+  }
+  .lab-tag {
+    display: inline-block;
+    padding: 6px 14px;
+    background: var(--c-ink);
+    color: white;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    border-radius: var(--r-pill);
+    margin-bottom: 12px;
+  }
+  .lab-title {
+    font-size: 32px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+  .lab-sub {
+    color: var(--c-ink-2);
+    margin-top: 8px;
+    font-size: 15px;
+  }
+  .screens {
+    max-width: 1280px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+  }
+  @media (max-width: 1024px) { .screens { grid-template-columns: 1fr; } }
+  .phone {
+    background: linear-gradient(180deg, var(--c-bg-grad-from) 0%, var(--c-bg-grad-to) 100%);
+    border-radius: 36px;
+    padding: 18px 14px;
+    box-shadow: var(--shadow-card);
+    aspect-ratio: 9 / 19.5;
+    overflow: hidden;
+    position: relative;
+  }
+  .phone-label {
+    position: absolute;
+    top: -28px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--c-ink);
+    white-space: nowrap;
+  }
+  .statusbar {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--c-ink);
+    padding: 4px 12px 8px;
+  }
+
+  /* HOME SCREEN */
+  .home-brand { padding: 8px 8px 14px; }
+  .home-brand-name {
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+  .home-brand-sub {
+    font-size: 11px;
+    color: var(--c-ink-2);
+    margin-top: 2px;
+  }
+  .hero {
+    background: linear-gradient(135deg, #FFE4A8 0%, #FFCFB7 100%);
+    border-radius: var(--r-card);
+    padding: 22px 18px;
+    margin: 0 8px 16px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -30px;
+    right: -30px;
+    width: 100px;
+    height: 100px;
+    background: rgba(255,255,255,0.4);
+    border-radius: 50%;
+  }
+  .hero-greeting {
+    font-size: 13px;
+    color: var(--c-ink-2);
+    margin-bottom: 6px;
+  }
+  .hero-title {
+    font-size: 22px;
+    font-weight: 800;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+    position: relative;
+    z-index: 1;
+  }
+  .hero-stat {
+    margin-top: 14px;
+    font-size: 12px;
+    color: var(--c-ink-2);
+    position: relative;
+    z-index: 1;
+  }
+  .hero-stat b { color: var(--c-ink); font-weight: 700; }
+  .capture-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    padding: 0 8px;
+    margin-bottom: 14px;
+  }
+  .cap-btn {
+    background: var(--c-card);
+    border-radius: 14px;
+    aspect-ratio: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    box-shadow: var(--shadow-soft);
+    font-size: 9px;
+    color: var(--c-ink-2);
+    font-weight: 500;
+  }
+  .cap-emoji { font-size: 20px; }
+  .section-title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--c-ink-2);
+    padding: 0 8px;
+    margin: 16px 0 8px;
+  }
+  .topic-card {
+    background: var(--c-card);
+    border-radius: 14px;
+    padding: 12px 14px;
+    margin: 0 8px 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: var(--shadow-soft);
+  }
+  .topic-dot {
+    width: 28px; height: 28px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+  .topic-name { font-size: 13px; font-weight: 600; }
+  .topic-meta { font-size: 10px; color: var(--c-ink-3); margin-top: 1px; }
+  .topic-count {
+    margin-left: auto;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--c-ink);
+  }
+  .home-cta {
+    margin: 14px 8px 0;
+    background: var(--c-ink);
+    color: white;
+    text-align: center;
+    padding: 13px;
+    border-radius: var(--r-pill);
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  /* REFLECTION SCREEN */
+  .refl-header { padding: 8px 8px 12px; }
+  .refl-eyebrow {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--c-ink-2);
+    margin-bottom: 6px;
+  }
+  .refl-title {
+    font-size: 24px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+  }
+  .refl-date {
+    font-size: 12px;
+    color: var(--c-ink-2);
+    margin-top: 4px;
+  }
+  .refl-mode-card {
+    background: var(--c-ink);
+    color: white;
+    border-radius: var(--r-card);
+    padding: 16px;
+    margin: 0 8px 14px;
+  }
+  .refl-mode-tag {
+    display: inline-block;
+    background: var(--c-yellow);
+    color: var(--c-ink);
+    font-size: 10px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: var(--r-pill);
+    letter-spacing: 0.05em;
+    margin-bottom: 8px;
+  }
+  .refl-mode-reason {
+    font-size: 12px;
+    line-height: 1.55;
+    color: rgba(255,255,255,0.85);
+  }
+  .refl-body-card {
+    background: var(--c-card);
+    border-radius: var(--r-card);
+    padding: 16px;
+    margin: 0 8px 14px;
+    box-shadow: var(--shadow-soft);
+  }
+  .refl-h {
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .refl-h-dot {
+    width: 6px; height: 6px; background: var(--c-orange); border-radius: 50%;
+  }
+  .refl-body-text {
+    font-size: 12px;
+    line-height: 1.6;
+    color: var(--c-ink-2);
+  }
+  .refl-body-text b { color: var(--c-ink); font-weight: 600; }
+  .lookback {
+    background: linear-gradient(135deg, #FFF1D6 0%, #FFE0B8 100%);
+    border-radius: var(--r-card);
+    padding: 14px 16px;
+    margin: 0 8px;
+    border: 1px solid rgba(255, 165, 80, 0.2);
+  }
+  .lookback-tag {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--c-orange);
+    margin-bottom: 6px;
+  }
+  .lookback-text {
+    font-size: 12px;
+    line-height: 1.55;
+    color: var(--c-ink);
+  }
+  .lookback-link {
+    margin-top: 8px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--c-ink);
+    text-decoration: underline;
+  }
+
+  /* TOPIC SCREEN */
+  .topic-back { font-size: 13px; color: var(--c-ink-2); padding: 8px; }
+  .topic-page-title {
+    font-size: 26px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    padding: 0 8px 4px;
+  }
+  .topic-page-meta {
+    font-size: 12px;
+    color: var(--c-ink-2);
+    padding: 0 8px 16px;
+  }
+  .evolution-card {
+    background: var(--c-card);
+    border-radius: var(--r-card);
+    padding: 18px;
+    margin: 0 8px 14px;
+    box-shadow: var(--shadow-soft);
+  }
+  .evo-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--c-orange);
+    margin-bottom: 8px;
+  }
+  .evo-text {
+    font-size: 13px;
+    line-height: 1.65;
+    color: var(--c-ink);
+  }
+  .evo-text b { font-weight: 700; }
+  .timeline {
+    background: var(--c-card);
+    border-radius: var(--r-card);
+    padding: 16px;
+    margin: 0 8px 12px;
+    box-shadow: var(--shadow-soft);
+  }
+  .tl-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--c-ink-2);
+    margin-bottom: 12px;
+  }
+  .tl-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+  .tl-month {
+    font-size: 11px;
+    color: var(--c-ink-2);
+    width: 36px;
+    font-weight: 600;
+  }
+  .tl-bar {
+    height: 8px;
+    background: linear-gradient(90deg, var(--c-orange), var(--c-yellow));
+    border-radius: 4px;
+  }
+  .tl-count {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--c-ink);
+    margin-left: auto;
+  }
+  .cloud {
+    background: var(--c-card-soft);
+    border-radius: var(--r-card);
+    padding: 14px;
+    margin: 0 8px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .tag {
+    background: var(--c-card);
+    padding: 5px 10px;
+    border-radius: var(--r-pill);
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--c-ink-2);
+    box-shadow: var(--shadow-soft);
+  }
+  .tag.big { font-size: 13px; font-weight: 600; color: var(--c-ink); }
+</style>
+</head>
+<body>
+
+<div class="lab-header">
+  <div class="lab-tag">MOCKUP · A · WARM MINIMAL</div>
+  <div class="lab-title">Curio · 暖色渐变 + 黑按钮 + 友好图标</div>
+  <div class="lab-sub">SPENDIO 调性直接对位 · 主色板：橙黄 → 柔绿</div>
+</div>
+
+<div class="screens">
+
+  <!-- HOME -->
+  <div class="phone">
+    <div class="phone-label">首页</div>
+    <div class="statusbar"><span>9:41</span><span>● ●</span></div>
+    <div class="home-brand">
+      <div class="home-brand-name">Curio</div>
+      <div class="home-brand-sub">a home for everything you're curious about.</div>
+    </div>
+
+    <div class="hero">
+      <div class="hero-greeting">早上好，Yuri</div>
+      <div class="hero-title">本月你最<br>好奇这 3 件事</div>
+      <div class="hero-stat"><b>本月 47 条</b> · 比上月多 <b>+18%</b></div>
+    </div>
+
+    <div class="capture-row">
+      <div class="cap-btn"><span class="cap-emoji">📷</span>拍照</div>
+      <div class="cap-btn"><span class="cap-emoji">🖼️</span>截图</div>
+      <div class="cap-btn"><span class="cap-emoji">✍️</span>文字</div>
+      <div class="cap-btn"><span class="cap-emoji">🎤</span>语音</div>
+    </div>
+
+    <div class="section-title">本月主题</div>
+
+    <div class="topic-card">
+      <div class="topic-dot" style="background:#FFE0A8;">🤖</div>
+      <div>
+        <div class="topic-name">AI 产品交互</div>
+        <div class="topic-meta">最近 4 月 8 日</div>
+      </div>
+      <div class="topic-count">23</div>
+    </div>
+    <div class="topic-card">
+      <div class="topic-dot" style="background:#FFCFB7;">📐</div>
+      <div>
+        <div class="topic-name">字体搭配</div>
+        <div class="topic-meta">最近 5 月 20 日</div>
+      </div>
+      <div class="topic-count">11</div>
+    </div>
+    <div class="topic-card">
+      <div class="topic-dot" style="background:#C8E6C0;">🌱</div>
+      <div>
+        <div class="topic-name">初创团队管理</div>
+        <div class="topic-meta">最近 5 月 24 日</div>
+      </div>
+      <div class="topic-count">9</div>
+    </div>
+
+    <div class="home-cta">扔点东西进来</div>
+  </div>
+
+  <!-- REFLECTION -->
+  <div class="phone">
+    <div class="phone-label">今晚的 Curio</div>
+    <div class="statusbar"><span>22:00</span><span>● ●</span></div>
+
+    <div class="refl-header">
+      <div class="refl-eyebrow">今 晚 的 C U R I O</div>
+      <div class="refl-title">5 月 24 日<br>的轨迹</div>
+      <div class="refl-date">你今天留下了 <b style="color:var(--c-ink)">6 道痕迹</b></div>
+    </div>
+
+    <div class="refl-mode-card">
+      <div class="refl-mode-tag">学习卡态</div>
+      <div class="refl-mode-reason">
+        你今天 6 条里有 5 条都在讨论 onboarding 设计，我给你做了一张学习卡，方便你日后复习。
+      </div>
+    </div>
+
+    <div class="refl-body-card">
+      <div class="refl-h"><span class="refl-h-dot"></span>今日学习卡</div>
+      <div class="refl-body-text">
+        <b>核心概念</b>：渐进式引导（Progressive Onboarding）<br><br>
+        <b>定义</b>：让用户在使用中逐步发现功能，而不是一次性灌完所有功能介绍。<br><br>
+        <b>今日证据</b>：Linear Cmd+K · Mymind 首次拖拽提示 · Cursor 的右下角小气泡。<br><br>
+        <b>我的应用</b>：Curio 的 iOS Shortcuts 设置可以用这种方式分散在前 3 天。
+      </div>
+    </div>
+
+    <div class="lookback">
+      <div class="lookback-tag">上 周 的 你</div>
+      <div class="lookback-text">
+        4 月 12 日你写过：「不要做大而全的 PKM」。今天你记的方向有点偏大而全，要不要回去看看？
+      </div>
+      <div class="lookback-link">打开那条 →</div>
+    </div>
+  </div>
+
+  <!-- TOPIC -->
+  <div class="phone">
+    <div class="phone-label">主题：AI 产品交互</div>
+    <div class="statusbar"><span>9:41</span><span>● ●</span></div>
+
+    <div class="topic-back">← 返回</div>
+    <div class="topic-page-title">AI 产品交互</div>
+    <div class="topic-page-meta">23 条 · 4 月 8 日至今 · 跨度 47 天</div>
+
+    <div class="evolution-card">
+      <div class="evo-label">演 变 小 结</div>
+      <div class="evo-text">
+        最早你关注的是 <b>ChatGPT 的多轮对话设计</b>；4 月底转向了 <b>引导式 onboarding</b>；5 月起开始思考 <b>agent UI 的反馈机制</b>。<br><br>
+        看起来你的兴趣正从"基础对话体验"上升到"agent 交互范式"。
+      </div>
+    </div>
+
+    <div class="timeline">
+      <div class="tl-label">时 间 线 · 月 聚 合</div>
+      <div class="tl-row">
+        <div class="tl-month">5月</div>
+        <div class="tl-bar" style="width: 75%;"></div>
+        <div class="tl-count">12</div>
+      </div>
+      <div class="tl-row">
+        <div class="tl-month">4月</div>
+        <div class="tl-bar" style="width: 55%;"></div>
+        <div class="tl-count">9</div>
+      </div>
+      <div class="tl-row">
+        <div class="tl-month">3月</div>
+        <div class="tl-bar" style="width: 12%;"></div>
+        <div class="tl-count">2</div>
+      </div>
+    </div>
+
+    <div class="cloud">
+      <span class="tag big">onboarding</span>
+      <span class="tag big">agent UI</span>
+      <span class="tag">多轮对话</span>
+      <span class="tag">反馈机制</span>
+      <span class="tag">引导式</span>
+      <span class="tag big">Cmd+K</span>
+      <span class="tag">prompt</span>
+      <span class="tag">渐进式</span>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>
