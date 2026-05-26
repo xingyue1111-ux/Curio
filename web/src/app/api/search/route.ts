@@ -17,7 +17,8 @@
 import { NextRequest } from "next/server";
 import { getCurrentUser, getUserSupabase } from "@/lib/auth/current-user";
 import { embedText } from "@/lib/ai/embedding";
-import { chatStream, DeepSeekModels } from "@/lib/ai/deepseek";
+import { chatJson, chatStream, DeepSeekModels } from "@/lib/ai/deepseek";
+import { withRetry } from "@/lib/ai/retry";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -25,6 +26,8 @@ export const maxDuration = 60;
 interface SearchRequest {
   query: string;
   limit?: number;
+  /** deep=true 时启用 Plan-and-Execute 多步搜索 */
+  deep?: boolean;
 }
 
 interface Candidate {
@@ -66,19 +69,26 @@ export async function POST(request: NextRequest) {
 
   const supabase = await getUserSupabase(user);
 
-  // 1. Hybrid 搜索：并行跑向量 + 关键词
-  //
-  // 向量召回语义相关的；关键词召回字面 match 的。
-  // 实践证明中文短词（"怀疑论"3 字）向量召回率差，必须有 keyword 兜底。
-  const [vectorHitsPromise, keywordHitsPromise] = [
-    runVectorSearch(supabase, query, body.limit ?? 12),
-    runKeywordSearch(supabase, user.id, query, 12),
-  ];
+  // 0. Deep mode：先让 LLM 把 query 拆 2-3 个子查询
+  //    例："我之前关于 X 和 Y 的对比" → ["X 的思考", "Y 的思考", "X vs Y 的对比"]
+  let subQueries: string[] = [query];
+  if (body.deep) {
+    subQueries = await planSubQueries(query).catch(() => [query]);
+  }
 
-  const [vectorHits, keywordHits] = await Promise.all([
-    vectorHitsPromise,
-    keywordHitsPromise,
-  ]);
+  // 1. 对每个子查询跑 hybrid 搜索（向量 + 关键词），合并去重
+  const allHits: Array<
+    Omit<Candidate, "topic_name"> & { topic_name?: string | null }
+  > = [];
+  for (const sq of subQueries) {
+    const [v, k] = await Promise.all([
+      runVectorSearch(supabase, sq, body.limit ?? 12),
+      runKeywordSearch(supabase, user.id, sq, 12),
+    ]);
+    allHits.push(...v, ...k);
+  }
+  const vectorHits = allHits.filter((h) => h.similarity < 0.7);
+  const keywordHits = allHits.filter((h) => h.similarity >= 0.7);
 
   // 2. 合并去重（按 id），保留更高 similarity
   const merged = new Map<
@@ -170,9 +180,14 @@ export async function POST(request: NextRequest) {
         })
         .join("\n");
 
+      const subQueryHint =
+        body.deep && subQueries.length > 1
+          ? `\n\n（这是 deep 模式 · 我已经把你的问题拆成了 ${subQueries.length} 个子搜索：${subQueries.map((s) => `「${s}」`).join("、")}）`
+          : "";
+
       const systemPrompt = `你是 Curio 的回望搜索助手。用户在搜索 ta 自己以前扔进来的好奇心收藏。
 
-你的任务：根据用户的搜索词，从下面 ${candidates.length} 条候选里综合出一段答案（不是清单），告诉 ta「关于这个问题你之前思考过/收藏过什么」。
+你的任务：根据用户的搜索词，从下面 ${candidates.length} 条候选里综合出一段答案（不是清单），告诉 ta「关于这个问题你之前思考过/收藏过什么」。${subQueryHint}
 
 铁律：
 1. **用第二人称「你」**（不是"用户"也不是"我"）
@@ -181,7 +196,7 @@ export async function POST(request: NextRequest) {
 4. 200-400 字
 5. 不相关的候选**不要塞进去凑数**，只引用真相关的
 6. 没有真相关的候选 → 直接说"你之前没扔过跟 X 直接相关的东西"，不要硬编
-
+${body.deep ? "7. **deep 模式特别要求**：必须明确指出不同子搜索之间的**对比/演变/联系**，不是平铺直叙\n" : ""}
 候选列表：
 ${candidateBlock}`;
 
@@ -229,6 +244,46 @@ ${candidateBlock}`;
 function formatDate(iso: string): string {
   const d = new Date(iso);
   return `${d.getMonth() + 1}/${d.getDate()}`;
+}
+
+// ============================================================
+// Plan-and-Execute · 把复杂 query 拆成 2-3 个子查询
+// ============================================================
+async function planSubQueries(query: string): Promise<string[]> {
+  const systemPrompt = `用户输入一个复杂搜索词，可能含多个概念 / 时间对比 / 演变追问。
+你的任务：把它拆成 2-3 个独立的子搜索词，每个能单独跑 embedding 搜索。
+
+例子：
+- "我之前关于 onboarding 和 AI 教育的对比" → ["onboarding 设计", "AI 教育产品", "教育和引导的关系"]
+- "笛卡尔怀疑论和现在 AI 时代的关系" → ["笛卡尔怀疑论", "AI 时代的知识焦虑", "理性主义 vs 后真相"]
+- "字体设计" → ["字体设计"]（简单 query 不拆）
+
+输出 JSON：{"sub_queries": ["子查询 1", "子查询 2", ...]}
+
+注意：
+- 简单 query（< 10 字 / 单概念）就返回 [原 query]，不要硬拆
+- 子查询用中文，4-15 字最佳
+- 最多 3 个`;
+
+  const result = await withRetry(
+    () =>
+      chatJson<{ sub_queries: string[] }>(
+        [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: query },
+        ],
+        {
+          model: DeepSeekModels.flash,
+          temperature: 0.3,
+          maxTokens: 300,
+        }
+      ),
+    { name: "planSubQueries" }
+  );
+
+  const subs = Array.isArray(result.sub_queries) ? result.sub_queries : [];
+  if (subs.length === 0) return [query];
+  return subs.slice(0, 3);
 }
 
 // ============================================================

@@ -22,10 +22,38 @@ const CACHE_TTL_MS = 60 * 60 * 1000; // 1 小时
 
 export interface NarrativeWithMeta {
   scope: NarrativeScope;
+  period_key: string;
   content: NarrativeContent;
   generated_at: string;
   item_count: number;
   is_fresh: boolean; // 这次访问是否触发了重生
+}
+
+/**
+ * 当前期 period_key
+ *  - recent_7d → ISO 周「2026-W21」
+ *  - month     → 「2026-05」
+ */
+export function currentPeriodKey(scope: NarrativeScope, when: Date = new Date()): string {
+  if (scope === "month") {
+    const y = when.getFullYear();
+    const m = String(when.getMonth() + 1).padStart(2, "0");
+    return `${y}-${m}`;
+  }
+  // ISO week
+  const target = new Date(Date.UTC(when.getFullYear(), when.getMonth(), when.getDate()));
+  const dayNr = (target.getUTCDay() + 6) % 7;
+  target.setUTCDate(target.getUTCDate() - dayNr + 3);
+  const firstThursday = new Date(Date.UTC(target.getUTCFullYear(), 0, 4));
+  const week =
+    1 +
+    Math.round(
+      ((target.getTime() - firstThursday.getTime()) / 86400000 -
+        3 +
+        ((firstThursday.getUTCDay() + 6) % 7)) /
+        7
+    );
+  return `${target.getUTCFullYear()}-W${String(week).padStart(2, "0")}`;
 }
 
 /**
@@ -38,7 +66,16 @@ export interface NarrativeWithMeta {
  */
 export async function invalidateNarratives(user: CurrentUser): Promise<void> {
   const supabase = await getUserSupabase(user);
-  await supabase.from("narratives").delete().eq("user_id", user.id);
+  // 只删当期，不动归档（归档是历史快照不能丢）
+  const recentKey = currentPeriodKey("recent_7d");
+  const monthKey = currentPeriodKey("month");
+  await supabase
+    .from("narratives")
+    .delete()
+    .eq("user_id", user.id)
+    .or(
+      `and(scope.eq.recent_7d,period_key.eq.${recentKey}),and(scope.eq.month,period_key.eq.${monthKey})`
+    );
 }
 
 /**
@@ -128,13 +165,15 @@ export async function getOrGenerateNarrative(
   scope: NarrativeScope
 ): Promise<NarrativeWithMeta> {
   const supabase = await getUserSupabase(user);
+  const period_key = currentPeriodKey(scope);
 
-  // 1. 查缓存
+  // 1. 查缓存（按当期 period_key）
   const { data: cached } = await supabase
     .from("narratives")
     .select("content, generated_at, item_count_at_gen")
     .eq("user_id", user.id)
     .eq("scope", scope)
+    .eq("period_key", period_key)
     .maybeSingle();
 
   // 2. 实时拉当前窗 + 上一窗的 items
@@ -152,6 +191,7 @@ export async function getOrGenerateNarrative(
     if (age < CACHE_TTL_MS && itemsUnchanged) {
       return {
         scope,
+        period_key,
         content: cached.content as NarrativeContent,
         generated_at: cached.generated_at,
         item_count: cached.item_count_at_gen,
@@ -171,6 +211,7 @@ export async function getOrGenerateNarrative(
     if (cached) {
       return {
         scope,
+        period_key,
         content: cached.content as NarrativeContent,
         generated_at: cached.generated_at,
         item_count: cached.item_count_at_gen,
@@ -186,26 +227,80 @@ export async function getOrGenerateNarrative(
   }
   const generationMs = Date.now() - start;
 
-  // 4. 写缓存（upsert by unique user_id + scope）
+  // 4. 写缓存（upsert by unique user_id + scope + period_key）
   const now = new Date().toISOString();
   await supabase.from("narratives").upsert(
     {
       user_id: user.id,
       scope,
+      period_key,
       content,
       item_count_at_gen: currentCount,
       generation_ms: generationMs,
       generated_at: now,
     },
-    { onConflict: "user_id,scope" }
+    { onConflict: "user_id,scope,period_key" }
   );
 
   return {
     scope,
+    period_key,
     content,
     generated_at: now,
     item_count: currentCount,
     is_fresh: true,
+  };
+}
+
+/**
+ * 拉某 scope 的所有归档（按 period_key 倒序）
+ */
+export async function listNarrativeArchives(
+  user: CurrentUser,
+  scope: NarrativeScope,
+  limit = 12
+): Promise<Array<{ period_key: string; generated_at: string; item_count: number }>> {
+  const supabase = await getUserSupabase(user);
+  const { data } = await supabase
+    .from("narratives")
+    .select("period_key, generated_at, item_count_at_gen")
+    .eq("user_id", user.id)
+    .eq("scope", scope)
+    .order("period_key", { ascending: false })
+    .limit(limit);
+
+  return (data ?? []).map((row) => ({
+    period_key: row.period_key as string,
+    generated_at: row.generated_at as string,
+    item_count: (row.item_count_at_gen as number) ?? 0,
+  }));
+}
+
+/**
+ * 按 period_key 拉单个归档（不再生）
+ */
+export async function getNarrativeByPeriod(
+  user: CurrentUser,
+  scope: NarrativeScope,
+  period_key: string
+): Promise<NarrativeWithMeta | null> {
+  const supabase = await getUserSupabase(user);
+  const { data } = await supabase
+    .from("narratives")
+    .select("content, generated_at, item_count_at_gen")
+    .eq("user_id", user.id)
+    .eq("scope", scope)
+    .eq("period_key", period_key)
+    .maybeSingle();
+
+  if (!data) return null;
+  return {
+    scope,
+    period_key,
+    content: data.content as NarrativeContent,
+    generated_at: data.generated_at,
+    item_count: data.item_count_at_gen,
+    is_fresh: false,
   };
 }
 

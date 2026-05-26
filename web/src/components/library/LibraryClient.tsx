@@ -60,6 +60,7 @@ export function LibraryClient({
   isDevSeed,
 }: LibraryClientProps) {
   const [input, setInput] = useState("");
+  const [deep, setDeep] = useState(false);
   const [search, setSearch] = useState<SearchState>(emptySearch);
   const abortRef = useRef<AbortController | null>(null);
 
@@ -81,7 +82,7 @@ export function LibraryClient({
       const res = await fetch("/api/search", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query }),
+        body: JSON.stringify({ query, deep }),
         signal: ac.signal,
       });
 
@@ -180,12 +181,16 @@ export function LibraryClient({
       </p>
 
       {/* Search */}
-      <div className="relative mb-8">
+      <div className="relative mb-3">
         <input
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKey}
-          placeholder="我之前关于 X 写过啥？按 ↵ 搜"
+          placeholder={
+            deep
+              ? "多步推理 · 比如「X 和 Y 的对比」"
+              : "我之前关于 X 写过啥？按 ↵ 搜"
+          }
           className="w-full rounded-md px-4 py-3 text-[14px] text-(--color-ink) placeholder:text-(--color-ink-3) outline-none transition-colors"
           style={{
             background: "var(--color-card)",
@@ -205,6 +210,44 @@ export function LibraryClient({
             ×
           </button>
         )}
+      </div>
+
+      {/* Deep mode toggle */}
+      <div className="flex items-center gap-2 mb-8 text-[11px]">
+        <button
+          onClick={() => setDeep(!deep)}
+          className="flex items-center gap-2 group"
+        >
+          <span
+            className="w-7 h-4 rounded-full relative transition-colors"
+            style={{
+              background: deep ? "var(--color-lime)" : "var(--color-card-2)",
+              border: "1px solid var(--color-border)",
+            }}
+          >
+            <span
+              className="absolute top-0.5 w-2.5 h-2.5 rounded-full transition-all"
+              style={{
+                background: deep ? "#0a0f0c" : "var(--color-ink-3)",
+                left: deep ? "calc(100% - 13px)" : "2px",
+              }}
+            />
+          </span>
+          <span
+            className={
+              deep
+                ? "text-(--color-lime) font-medium"
+                : "text-(--color-ink-3) group-hover:text-(--color-ink-2)"
+            }
+          >
+            深度推理
+          </span>
+        </button>
+        <span className="text-(--color-ink-4) text-[10px]">
+          {deep
+            ? "· AI 会拆子问题 · 比较 / 演变 / 跨主题对比时用"
+            : "· 单步搜索 · 适合找一条具体的"}
+        </span>
       </div>
 
       {/* 切两种视图 */}

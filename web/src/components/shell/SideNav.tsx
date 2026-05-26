@@ -9,7 +9,14 @@
 
 import Link from "next/link";
 
-export type NavSection = "home" | "library" | "threads";
+export type NavSection =
+  | "home"
+  | "library"
+  | "threads"
+  | "reflect"
+  | "reports"
+  | "growth"
+  | "graph";
 
 interface SideNavProps {
   userInitial: string;
@@ -109,6 +116,38 @@ export function SideNav({
         >
           收藏库
         </NavLink>
+        <NavLink
+          href="/reflect"
+          active={active === "reflect"}
+          icon={IconReflect}
+          keyHint="g r"
+        >
+          今晚反思
+        </NavLink>
+        <NavLink
+          href="/reports"
+          active={active === "reports"}
+          icon={IconReports}
+          keyHint="g p"
+        >
+          周报月报
+        </NavLink>
+        <NavLink
+          href="/growth"
+          active={active === "growth"}
+          icon={IconGrowth}
+          keyHint="g w"
+        >
+          成长
+        </NavLink>
+        <NavLink
+          href="/graph"
+          active={active === "graph"}
+          icon={IconGraph}
+          keyHint="g g"
+        >
+          知识图谱
+        </NavLink>
 
         <div className="linear-nav-section">recent threads</div>
         <div className="px-2.5 py-1 text-[11px] text-(--color-ink-3) leading-[1.6]">
@@ -116,8 +155,17 @@ export function SideNav({
         </div>
       </nav>
 
-      {/* 底部用户 + 快捷键 */}
+      {/* 底部用户 + 导出 */}
       <div className="mt-3 pt-3 border-t border-(--color-border)">
+        <a
+          href="/api/export"
+          download
+          className="linear-nav-item text-[11px] mb-1"
+          title="把你所有数据导出为 JSON"
+        >
+          <DownloadIcon className="w-3.5 h-3.5" />
+          <span className="flex-1">导出全部数据</span>
+        </a>
         <div className="flex items-center gap-2.5 px-1 py-2">
           <div
             className="w-7 h-7 rounded-full flex items-center justify-center font-bold text-[12px]"
@@ -228,6 +276,122 @@ function IconNarrative({ className }: { className?: string }) {
         d="M3 4.5h10M3 8h7M3 11.5h10"
         stroke="currentColor"
         strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+function DownloadIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      width="14"
+      height="14"
+      viewBox="0 0 16 16"
+      fill="none"
+      style={{ flexShrink: 0 }}
+    >
+      <path
+        d="M8 2v8M4.5 7l3.5 3.5L11.5 7M3 13h10"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function IconReflect({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      width="14"
+      height="14"
+      viewBox="0 0 16 16"
+      fill="none"
+      style={{ flexShrink: 0 }}
+    >
+      <path
+        d="M13 8.5A5 5 0 117.5 3a4 4 0 005.5 5.5z"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function IconReports({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      width="14"
+      height="14"
+      viewBox="0 0 16 16"
+      fill="none"
+      style={{ flexShrink: 0 }}
+    >
+      <rect
+        x="3"
+        y="2.5"
+        width="10"
+        height="11"
+        rx="1"
+        stroke="currentColor"
+        strokeWidth="1.5"
+      />
+      <path
+        d="M5.5 6h5M5.5 8.5h5M5.5 11h3"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+function IconGrowth({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      width="14"
+      height="14"
+      viewBox="0 0 16 16"
+      fill="none"
+      style={{ flexShrink: 0 }}
+    >
+      <path
+        d="M3 12.5l3-3 2.5 2L13 4M9.5 4H13v3.5"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function IconGraph({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      width="14"
+      height="14"
+      viewBox="0 0 16 16"
+      fill="none"
+      style={{ flexShrink: 0 }}
+    >
+      <circle cx="8" cy="8" r="2" stroke="currentColor" strokeWidth="1.5" />
+      <circle cx="3" cy="3.5" r="1.5" stroke="currentColor" strokeWidth="1.5" />
+      <circle cx="13" cy="3.5" r="1.5" stroke="currentColor" strokeWidth="1.5" />
+      <circle cx="13" cy="12.5" r="1.5" stroke="currentColor" strokeWidth="1.5" />
+      <circle cx="3" cy="12.5" r="1.5" stroke="currentColor" strokeWidth="1.5" />
+      <path
+        d="M4 4.5l2.5 2.5M11.5 7l1-2.5M11.5 9l1 2.5M4 11.5l2.5-2.5"
+        stroke="currentColor"
+        strokeWidth="1.2"
         strokeLinecap="round"
       />
     </svg>

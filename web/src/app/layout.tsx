@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import { OfflineIndicator } from "@/components/shell/OfflineIndicator";
 
 export const metadata: Metadata = {
   title: "Curio · 好奇心收藏",
@@ -46,7 +47,10 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body>{children}</body>
+      <body>
+        <OfflineIndicator />
+        {children}
+      </body>
     </html>
   );
 }

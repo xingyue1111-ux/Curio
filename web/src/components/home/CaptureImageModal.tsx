@@ -350,18 +350,58 @@ function ComposeStep({
 }
 
 // ============================================================
-// Processing
+// Processing · 分阶段动态文字（fetch 不支持真实进度，按时间假分阶段）
 // ============================================================
 function ProcessingStep() {
+  const [phase, setPhase] = useState<"upload" | "analyze" | "finalize">(
+    "upload"
+  );
+  const [elapsed, setElapsed] = useState(0);
+
+  useEffect(() => {
+    const start = Date.now();
+    const timer = setInterval(() => {
+      const sec = Math.floor((Date.now() - start) / 1000);
+      setElapsed(sec);
+      if (sec >= 8) setPhase("finalize");
+      else if (sec >= 3) setPhase("analyze");
+    }, 200);
+    return () => clearInterval(timer);
+  }, []);
+
+  const messages = {
+    upload: {
+      title: "上传图片到云端…",
+      sub: "通常 1-2 秒",
+    },
+    analyze: {
+      title: "豆包正在看图…",
+      sub: "OCR + 内容理解 + 主题归类",
+    },
+    finalize: {
+      title: "整理结果中…",
+      sub: "稍等一下，AI 写完就好",
+    },
+  } as const;
+
+  const m = messages[phase];
+
   return (
     <div className="py-12 text-center">
-      <div className="serif italic text-[24px] text-(--color-lime) mb-3 animate-pulse">
-        Curio 正在看图…
+      <div className="flex items-center justify-center gap-2 mb-3">
+        <span
+          className="w-1.5 h-1.5 rounded-full animate-pulse"
+          style={{ background: "var(--color-lime)" }}
+        />
+        <div className="serif italic text-[22px] text-(--color-lime)">
+          {m.title}
+        </div>
       </div>
       <div className="text-[12px] text-(--color-ink-3) leading-relaxed">
-        AI 在识别图里的内容
-        <br />
-        图片处理通常 5-10 秒
+        {m.sub}
+      </div>
+      <div className="text-[10px] text-(--color-ink-4) tracking-wider mt-3 tabular">
+        {elapsed}s
       </div>
     </div>
   );

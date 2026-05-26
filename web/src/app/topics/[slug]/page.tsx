@@ -1,152 +1,236 @@
 /**
- * 主题详情页
- *
- * V0 Sprint 0：静态占位（AI 产品交互主题示例）。
- * Sprint 2 接 Supabase 拉真实主题 + AI 演变小结。
+ * 主题详情页 · 真实数据 + AI 演变小结
  */
 
+import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
+import { getCurrentUser, getUserSupabase } from "@/lib/auth/current-user";
+import { generateTopicEvolution } from "@/lib/topics/evolution";
+import { AppShell } from "@/components/shell/AppShell";
+import { daysSince, formatChineseDate } from "@/lib/items/queries";
 
-const mockTopic = {
-  slug: "ai-product-ux",
-  name: "AI 产品交互",
-  count: 23,
-  since: "4 月 8 日",
-  days: 47,
-  no: "01",
-  evolution:
-    "最早你关注 ChatGPT 多轮对话；4 月底转向 引导式 onboarding；5 月起开始思考 agent UI 的反馈机制。",
-  monthly: [
-    { label: "5月", count: 12, width: 75 },
-    { label: "4月", count: 9, width: 55, dim: true },
-    { label: "3月", count: 2, width: 12, dim: true },
-  ],
-  keywords: [
-    { text: "onboarding", big: true },
-    { text: "agent UI", big: true },
-    { text: "Cmd+K", big: false },
-    { text: "反馈机制", big: false },
-    { text: "多轮对话", big: false },
-    { text: "渐进式", big: false },
-  ],
-};
+interface TopicRow {
+  id: string;
+  user_id: string;
+  name: string;
+  slug: string;
+  ai_evolution_summary: string | null;
+  item_count: number;
+  last_item_at: string | null;
+  created_at: string;
+}
 
-export default async function TopicPage({
+interface ItemRow {
+  id: string;
+  source_type: string;
+  ai_summary: string | null;
+  user_note: string | null;
+  raw_content: string | null;
+  ocr_text: string | null;
+  storage_path: string | null;
+  created_at: string;
+}
+
+export default async function TopicDetailPage({
   params,
 }: {
   params: Promise<{ slug: string }>;
 }) {
-  await params; // V0 还没用 slug 路由
+  const user = await getCurrentUser();
+  if (!user) redirect("/login");
 
-  const t = mockTopic;
+  const { slug } = await params;
+  const supabase = await getUserSupabase(user);
+
+  // 拉 topic
+  const { data: topic } = await supabase
+    .from("topics")
+    .select("*")
+    .eq("user_id", user.id)
+    .eq("slug", slug)
+    .maybeSingle();
+
+  if (!topic) notFound();
+  const t = topic as TopicRow;
+
+  // 拉该主题所有 items（按时间倒序展示，但演变小结按时间正序计算）
+  const { data: itemsData } = await supabase
+    .from("items")
+    .select(
+      "id, source_type, ai_summary, user_note, raw_content, ocr_text, storage_path, created_at"
+    )
+    .eq("user_id", user.id)
+    .eq("topic_id", t.id)
+    .order("created_at", { ascending: false });
+
+  const items = (itemsData ?? []) as ItemRow[];
+
+  // 演变小结 · 缓存策略：item_count 不变 → 用 ai_evolution_summary，否则重生
+  // V0 简化：每次访问都跑（页面访问频率低）
+  // V0.5 加缓存（在 topics 表加 evolution_at + evolution_count 字段）
+  let evolution = t.ai_evolution_summary;
+  let keywords: Array<{ word: string; weight: "big" | "med" | "small" }> = [];
+
+  if (items.length > 0 && (!evolution || items.length >= 3)) {
+    try {
+      const result = await generateTopicEvolution(
+        t.name,
+        items.map((i) => ({
+          ai_summary: i.ai_summary,
+          user_note: i.user_note,
+          raw_content: i.raw_content,
+          ocr_text: i.ocr_text,
+          created_at: i.created_at,
+        }))
+      );
+      evolution = result.evolution;
+      keywords = result.keywords;
+      // 写回缓存
+      if (evolution) {
+        await supabase
+          .from("topics")
+          .update({ ai_evolution_summary: evolution })
+          .eq("id", t.id);
+      }
+    } catch (err) {
+      console.warn("[topics/[slug]] evolution 生成失败:", err);
+    }
+  }
+
+  // signed URLs for image items
+  const imageItems = items.filter(
+    (i) =>
+      i.storage_path && (i.source_type === "image" || i.source_type === "screenshot")
+  );
+  let signedMap = new Map<string, string>();
+  if (imageItems.length > 0) {
+    const paths = imageItems.map((i) => i.storage_path!);
+    const { data: signed } = await supabase.storage
+      .from("curio-items")
+      .createSignedUrls(paths, 3600);
+    if (signed) {
+      signedMap = new Map(
+        signed.map((s) => [s.path ?? "", s.signedUrl ?? ""])
+      );
+    }
+  }
 
   return (
-    <main className="min-h-screen flex items-center justify-center p-5">
-      <div className="phone-frame w-full max-w-[420px] aspect-[9/19.5] rounded-[38px] overflow-hidden shadow-2xl relative">
-        <div className="flex justify-between text-[11px] font-bold text-(--color-ink) px-[18px] pt-[16px] relative z-10">
-          <span>9:41</span>
-          <span>●●●</span>
-        </div>
+    <AppShell
+      userInitial={(user.displayName ?? user.email ?? "Y").charAt(0).toUpperCase()}
+      userName={user.displayName ?? user.email ?? "Yuri"}
+      isDevSeed={user.isDevSeed}
+      active="threads"
+      narrow
+    >
+      <Link
+        href={"/topics" as never}
+        className="inline-flex items-center gap-1 text-[12px] text-(--color-ink-3) hover:text-(--color-ink) transition-colors mb-6"
+      >
+        ← 所有主题
+      </Link>
 
-        <div className="px-[14px] pt-[14px] pb-[24px] relative z-10 h-full overflow-y-auto">
-          {/* Top */}
-          <div className="flex items-center justify-between mb-5.5">
-            <Link
-              href="/"
-              className="text-[13px] font-medium text-(--color-ink-2)"
-            >
-              ← 主题集合
-            </Link>
+      <div className="editorial-eyebrow mb-3">Topic · 主 题</div>
+      <h1 className="editorial-title text-[36px] md:text-[44px] mb-3 text-(--color-ink)">
+        {t.name}
+      </h1>
+      <div className="flex items-baseline gap-3 mb-8 pb-5 border-b border-(--color-border) text-[12px] text-(--color-ink-3)">
+        <span>
+          <b className="text-(--color-lime) font-medium">{t.item_count}</b> 条
+        </span>
+        <span>since {formatChineseDate(t.created_at)}</span>
+        <span>· {daysSince(t.created_at)} 天</span>
+      </div>
+
+      {/* 演变小结 */}
+      {evolution && (
+        <section className="mb-10">
+          <div className="editorial-eyebrow mb-3 text-(--color-lime)">
+            认 知 演 变
           </div>
+          <div className="editorial-body whitespace-pre-wrap">{evolution}</div>
+        </section>
+      )}
 
-          {/* Eyebrow + name */}
-          <div className="text-[10px] font-extrabold tracking-[0.25em] uppercase text-(--color-lime) mb-2">
-            主 题 集 合 · {t.no}
+      {/* 关键词云 */}
+      {keywords.length > 0 && (
+        <section className="mb-10 pb-8 border-b border-(--color-border)">
+          <div className="editorial-eyebrow mb-3 text-(--color-ink-3)">
+            关 键 词
           </div>
-          <h1 className="text-[38px] font-black tracking-[-0.03em] leading-[0.95] mb-4">
-            {t.name}
-          </h1>
-
-          {/* Big figure */}
-          <div className="flex items-end gap-3.5 mb-5.5 pb-4.5 border-b border-white/[0.06]">
-            <div className="tabular text-[64px] font-black text-(--color-lime) tracking-[-0.04em] leading-[0.9]">
-              {t.count}
-            </div>
-            <div className="text-[11px] text-(--color-ink-2) leading-[1.4] pb-2">
-              since <b className="text-(--color-ink) font-bold">{t.since}</b>
-              <br />
-              跨度 <b className="text-(--color-ink) font-bold">{t.days} 天</b>
-            </div>
-          </div>
-
-          {/* Evolution */}
-          <div className="mb-5.5">
-            <div className="text-[10px] font-extrabold tracking-[0.25em] uppercase text-(--color-lime) mb-2.5">
-              认 知 演 变
-            </div>
-            <p className="serif text-[14px] leading-[1.55] text-(--color-ink) font-normal">
-              {t.evolution}
-            </p>
-          </div>
-
-          {/* Monthly distribution */}
-          <div className="mb-4.5">
-            <div className="text-[10px] font-extrabold tracking-[0.25em] uppercase text-(--color-ink-3) mb-3">
-              月 度 分 布
-            </div>
-            {t.monthly.map((m) => (
-              <div key={m.label} className="flex items-center gap-2.5 mb-2">
-                <div className="tabular text-[11px] text-(--color-ink-2) w-7 font-semibold">
-                  {m.label}
-                </div>
-                <div
-                  className="h-1.5 rounded"
-                  style={{
-                    width: `${m.width}%`,
-                    background: m.dim
-                      ? "var(--color-forest)"
-                      : "var(--color-lime)",
-                    opacity: m.dim ? 0.6 : 1,
-                  }}
-                />
-                <div className="tabular text-[12px] font-extrabold text-(--color-ink) ml-auto">
-                  {m.count}
-                </div>
-              </div>
+          <div className="flex flex-wrap gap-x-3 gap-y-2 items-baseline serif">
+            {keywords.map((k, i) => (
+              <span
+                key={i}
+                className={
+                  k.weight === "big"
+                    ? "text-[20px] font-medium text-(--color-ink)"
+                    : k.weight === "med"
+                      ? "text-[15px] text-(--color-ink-2)"
+                      : "text-[12px] text-(--color-ink-3)"
+                }
+              >
+                {k.word}
+              </span>
             ))}
           </div>
+        </section>
+      )}
 
-          {/* Keywords */}
-          <div className="border-t border-white/[0.06] pt-4">
-            <div className="text-[10px] font-extrabold tracking-[0.25em] uppercase text-(--color-ink-3) mb-2.5">
-              关 键 词
-            </div>
-            <div className="flex flex-wrap gap-1.5">
-              {t.keywords.map((kw) => (
-                <span
-                  key={kw.text}
-                  className={
-                    "text-[11px] px-2.5 py-1 rounded-full border " +
-                    (kw.big
-                      ? "font-bold text-(--color-bg-1)"
-                      : "font-medium text-(--color-ink-2) border-(--color-border)")
-                  }
-                  style={
-                    kw.big
-                      ? {
-                          background: "var(--color-lime)",
-                          borderColor: "var(--color-lime)",
-                        }
-                      : { background: "var(--color-glass)" }
-                  }
-                >
-                  {kw.text}
-                </span>
-              ))}
-            </div>
-          </div>
-        </div>
+      {/* 所有 items */}
+      <div className="editorial-eyebrow mb-3 text-(--color-ink-3)">
+        全 部 {items.length} 条 · 时 间 倒 序
       </div>
-    </main>
+      <div className="space-y-2">
+        {items.map((item) => {
+          const url = item.storage_path ? signedMap.get(item.storage_path) : null;
+          return (
+            <div
+              key={item.id}
+              className="rounded-lg px-3.5 py-3 border border-(--color-border)"
+              style={{ background: "var(--color-card)" }}
+            >
+              <div className="text-[10px] text-(--color-ink-3) tracking-wider mb-1.5">
+                {formatChineseDate(item.created_at)} · {sourceLabel(item.source_type)}
+              </div>
+              {url && (
+                <img
+                  src={url}
+                  alt=""
+                  className="w-full rounded-md mb-2"
+                  style={{
+                    maxHeight: 160,
+                    objectFit: "cover",
+                    background: "var(--color-bg-2)",
+                  }}
+                />
+              )}
+              {item.ai_summary && (
+                <p className="text-[13px] font-semibold text-(--color-ink) leading-snug mb-1">
+                  {item.ai_summary}
+                </p>
+              )}
+              {item.user_note && (
+                <p className="serif italic text-[11px] text-(--color-ink-2) leading-snug">
+                  「{item.user_note}」
+                </p>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </AppShell>
   );
+}
+
+function sourceLabel(t: string): string {
+  return t === "image"
+    ? "图"
+    : t === "screenshot"
+      ? "截图"
+      : t === "voice"
+        ? "语音"
+        : t === "link"
+          ? "链接"
+          : "文字";
 }

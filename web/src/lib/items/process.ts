@@ -20,6 +20,7 @@ import {
 // 备选 Qwen3-VL-Plus（阿里 DashScope）见 @/lib/ai/qwen-vl
 import { analyzeImage } from "@/lib/ai/doubao-vl";
 import { embedText } from "@/lib/ai/embedding";
+import { withRetry } from "@/lib/ai/retry";
 
 export interface AiAnalysis {
   summary: string;
@@ -67,11 +68,15 @@ ${userNote ? `用户给出的批注（这是最关键的意图信号，要重点
     { role: "user", content },
   ];
 
-  const result = await chatJson<AiAnalysis>(messages, {
-    model: DeepSeekModels.flash,
-    temperature: 0.3,
-    maxTokens: 600,
-  });
+  const result = await withRetry(
+    () =>
+      chatJson<AiAnalysis>(messages, {
+        model: DeepSeekModels.flash,
+        temperature: 0.3,
+        maxTokens: 600,
+      }),
+    { name: "analyzeText" }
+  );
 
   // 兜底校验
   if (!result.summary || !result.suggested_topic) {
@@ -124,7 +129,9 @@ export async function processTextItem(input: {
     summary: analysis.summary,
   });
 
-  const embedding = await embedText(embeddingText);
+  const embedding = await withRetry(() => embedText(embeddingText), {
+    name: "embedText",
+  });
 
   return { ...analysis, embedding };
 }
@@ -152,10 +159,14 @@ export async function processImageItem(input: {
   userNote: string | null;
   existingTopics: string[];
 }): Promise<ImageProcessResult> {
-  const vl = await analyzeImage(
-    input.imageUrl,
-    input.userNote ?? undefined,
-    input.existingTopics
+  const vl = await withRetry(
+    () =>
+      analyzeImage(
+        input.imageUrl,
+        input.userNote ?? undefined,
+        input.existingTopics
+      ),
+    { name: "analyzeImage" }
   );
 
   // 判断主题是否是新建（VL 返回的字段叫 suggested_topic，没有 is_new 标记，
@@ -170,7 +181,9 @@ export async function processImageItem(input: {
     summary: vl.summary,
   });
 
-  const embedding = await embedText(embeddingText);
+  const embedding = await withRetry(() => embedText(embeddingText), {
+    name: "embedText",
+  });
 
   return {
     summary: vl.summary,
