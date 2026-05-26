@@ -16,7 +16,11 @@ export interface GraphNode {
   name: string;
   slug: string;
   item_count: number;
-  /** 节点位置（normalized 0-1） */
+  /** AI 写的演变小结 · 节点选中时展示 */
+  evolution_summary: string | null;
+  /** 最近一次扔东西 · 节点活跃度（距今天数越少越亮） */
+  last_item_at: string | null;
+  /** 节点位置（normalized 0-1）· 用作初始位置，客户端 sim 接管 */
   x: number;
   y: number;
   /** 半径 px */
@@ -40,6 +44,8 @@ interface TopicRow {
   name: string;
   slug: string;
   item_count: number;
+  ai_evolution_summary: string | null;
+  last_item_at: string | null;
 }
 
 interface ItemRow {
@@ -62,7 +68,7 @@ export async function getGraphData(
   // 1. 拉 topics（取 item_count 前 N 个）
   const { data: topicsData } = await supabase
     .from("topics")
-    .select("id, name, slug, item_count")
+    .select("id, name, slug, item_count, ai_evolution_summary, last_item_at")
     .eq("user_id", user.id)
     .order("item_count", { ascending: false })
     .limit(maxNodes);
@@ -135,6 +141,8 @@ export async function getGraphData(
       name: t.name,
       slug: t.slug,
       item_count: t.item_count,
+      evolution_summary: t.ai_evolution_summary,
+      last_item_at: t.last_item_at,
       x,
       y,
       r,

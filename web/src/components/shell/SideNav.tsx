@@ -125,14 +125,6 @@ export function SideNav({
           今晚反思
         </NavLink>
         <NavLink
-          href="/reports"
-          active={active === "reports"}
-          icon={IconReports}
-          keyHint="g p"
-        >
-          周报月报
-        </NavLink>
-        <NavLink
           href="/growth"
           active={active === "growth"}
           icon={IconGrowth}

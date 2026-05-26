@@ -1,10 +1,12 @@
 /**
- * 成长 · /growth
+ * 成长 · /growth · 叙事版
  *
- * 三个视图：
- *  1. 180 天每日热力图（GitHub contribution 风格）
- *  2. 主题排行 Top 10
- *  3. 最近 12 周主题分布（堆叠条）
+ * 设计原则：数据少也能讲一个故事。不堆图表，先讲叙事。
+ *
+ *  1. Hero：「自从 X 月 X 日，你在 Curio 留下 N 道痕迹」
+ *  2. 节奏卡：vs 上周 / 偏好时段 / 最活跃一天
+ *  3. 主题陈列：每个主题一行 + 累计 + 第一天到最近一天
+ *  4. 紧凑热力图（180 天）+ 图例
  */
 
 import Link from "next/link";
@@ -13,25 +15,24 @@ import { getCurrentUser } from "@/lib/auth/current-user";
 import { AppShell } from "@/components/shell/AppShell";
 import {
   getDailyCounts,
+  getGrowthOverview,
   getTopicRanking,
-  getTopicWeeklyDistribution,
   type DayCount,
+  type GrowthOverview,
   type TopicRank,
-  type TopicWeek,
 } from "@/lib/growth/queries";
+import { formatChineseDate } from "@/lib/items/queries";
 
 export default async function GrowthPage() {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
 
-  const [daily, ranking, weekly] = await Promise.all([
+  const [overview, daily, ranking] = await Promise.all([
+    getGrowthOverview(user),
     getDailyCounts(user, 180),
     getTopicRanking(user, 10),
-    getTopicWeeklyDistribution(user, 12),
   ]);
 
-  const totalItems = daily.reduce((s, d) => s + d.count, 0);
-  const activeDays = daily.filter((d) => d.count > 0).length;
   const maxCount = Math.max(1, ...daily.map((d) => d.count));
 
   return (
@@ -39,66 +40,279 @@ export default async function GrowthPage() {
       userInitial={(user.displayName ?? user.email ?? "Y").charAt(0).toUpperCase()}
       userName={user.displayName ?? user.email ?? "Yuri"}
       isDevSeed={user.isDevSeed}
-      active="home"
+      active="growth"
       narrow
     >
       <div className="editorial-eyebrow mb-3">Growth · 成 长</div>
-      <h1 className="editorial-title text-[36px] md:text-[44px] mb-3 text-(--color-ink)">
-        你的<em className="italic text-(--color-lime)">脑波</em>
-      </h1>
-      <p className="text-[13px] text-(--color-ink-3) mb-8 max-w-[480px] leading-[1.6]">
-        过去 180 天你扔了 <b className="text-(--color-lime)">{totalItems}</b>{" "}
-        条进来，活跃 <b className="text-(--color-lime)">{activeDays}</b> 天。
-      </p>
 
-      {/* 热力图 */}
-      <section className="mb-12">
+      {/* Hero */}
+      <HeroNarrative overview={overview} />
+
+      {/* 节奏卡（vs 上周 / 时段偏好 / 最活跃日） */}
+      <RhythmCards overview={overview} />
+
+      {/* 主题陈列 */}
+      <section className="mt-12">
         <div className="editorial-eyebrow mb-4 text-(--color-ink-3)">
-          1 8 0 天 活 动 热 图
+          你 关 注 的 主 题
         </div>
-        <Heatmap daily={daily} maxCount={maxCount} />
+        {ranking.length === 0 ? (
+          <p className="text-[12px] text-(--color-ink-3) leading-[1.6]">
+            还没有主题。扔几条进来 AI 会自动归类。
+          </p>
+        ) : (
+          <div className="space-y-1">
+            {ranking.map((t, i) => (
+              <TopicRow key={t.id} t={t} idx={i} />
+            ))}
+          </div>
+        )}
       </section>
 
-      {/* 主题排行 + 周分布 */}
-      <div className="grid md:grid-cols-2 gap-10">
-        <section>
-          <div className="editorial-eyebrow mb-4 text-(--color-ink-3)">
-            主 题 排 行
-          </div>
-          {ranking.length === 0 ? (
-            <p className="text-[12px] text-(--color-ink-3)">还没有主题。</p>
-          ) : (
-            <div className="space-y-1">
-              {ranking.map((t, idx) => (
-                <TopicRankRow key={t.id} t={t} idx={idx} />
-              ))}
-            </div>
-          )}
-        </section>
-
-        <section>
-          <div className="editorial-eyebrow mb-4 text-(--color-ink-3)">
-            最 近 1 2 周 分 布
-          </div>
-          <WeeklyStack weekly={weekly} ranking={ranking} />
-        </section>
-      </div>
+      {/* 紧凑热力图 */}
+      <section className="mt-12 pt-8 border-t border-(--color-border)">
+        <div className="editorial-eyebrow mb-4 text-(--color-ink-3)">
+          1 8 0 天 节 奏
+        </div>
+        <p className="text-[12px] text-(--color-ink-3) leading-[1.6] mb-4 max-w-[480px]">
+          每个方格是一天，颜色越亮说明你那天扔进来的东西越多。空的就是空的，不必焦虑。
+        </p>
+        <Heatmap daily={daily} maxCount={maxCount} />
+      </section>
     </AppShell>
   );
 }
 
 // ============================================================
-// Heatmap
+// Hero · 一句话讲清你在 Curio 留了多少痕迹
+// ============================================================
+function HeroNarrative({ overview }: { overview: GrowthOverview }) {
+  const since = overview.first_item_at
+    ? formatChineseDate(overview.first_item_at)
+    : null;
+  const daysSinceFirst = overview.first_item_at
+    ? Math.max(
+        1,
+        Math.ceil(
+          (Date.now() - new Date(overview.first_item_at).getTime()) /
+            (24 * 60 * 60 * 1000)
+        )
+      )
+    : 0;
+
+  if (overview.total_items === 0) {
+    return (
+      <>
+        <h1 className="editorial-title text-[36px] md:text-[44px] mb-3 text-(--color-ink)">
+          这里<em className="italic text-(--color-lime)">空着</em>
+        </h1>
+        <p className="text-[14px] text-(--color-ink-3) mb-8 max-w-[480px] leading-[1.65]">
+          扔第一条进来，你的成长轨迹就从这里开始记录。
+        </p>
+      </>
+    );
+  }
+
+  return (
+    <>
+      <h1 className="editorial-title text-[36px] md:text-[44px] mb-3 text-(--color-ink) leading-[1.15]">
+        {since ? (
+          <>
+            自{" "}
+            <em className="italic text-(--color-lime)">{since}</em>{" "}
+            起，你在这里留下了{" "}
+            <em className="italic text-(--color-lime)">
+              {overview.total_items}
+            </em>{" "}
+            道痕迹
+          </>
+        ) : (
+          <>
+            你已留下{" "}
+            <em className="italic text-(--color-lime)">
+              {overview.total_items}
+            </em>{" "}
+            道痕迹
+          </>
+        )}
+      </h1>
+      <p className="text-[14px] text-(--color-ink-2) mb-8 max-w-[520px] leading-[1.65]">
+        跨越{" "}
+        <b className="text-(--color-ink) font-medium">{daysSinceFirst}</b>{" "}
+        天 · 活跃{" "}
+        <b className="text-(--color-ink) font-medium">{overview.active_days}</b>{" "}
+        天 · 涉及{" "}
+        <b className="text-(--color-ink) font-medium">{overview.total_topics}</b>{" "}
+        个主题
+      </p>
+    </>
+  );
+}
+
+// ============================================================
+// 节奏卡：vs / 时段 / 最活跃日
+// ============================================================
+function RhythmCards({ overview }: { overview: GrowthOverview }) {
+  const diff = overview.recent_7d_count - overview.prev_7d_count;
+  const trend = diff > 0 ? "up" : diff < 0 ? "down" : "flat";
+
+  return (
+    <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-2">
+      {/* 最近 7 天 vs 上 7 天 */}
+      <RhythmCard
+        eyebrow="最近 7 天"
+        big={String(overview.recent_7d_count)}
+        sub={
+          trend === "up"
+            ? `比上周多 ${diff} 条`
+            : trend === "down"
+              ? `比上周少 ${Math.abs(diff)} 条`
+              : "跟上周持平"
+        }
+        accent={
+          trend === "up" ? "lime" : trend === "down" ? "muted" : "neutral"
+        }
+      />
+
+      {/* 偏好时段 */}
+      <RhythmCard
+        eyebrow="你的记录时段"
+        big={periodLabel(overview.peak_period)}
+        sub={
+          overview.peak_period
+            ? `${Math.round(overview.peak_period_share * 100)}% 都在这时`
+            : "数据不够"
+        }
+        accent="neutral"
+      />
+
+      {/* 最活跃一天 */}
+      <RhythmCard
+        eyebrow="最高产一天"
+        big={overview.busiest_day ? `${overview.busiest_day.count} 条` : "—"}
+        sub={
+          overview.busiest_day
+            ? formatChineseDate(overview.busiest_day.date)
+            : "还没有"
+        }
+        accent="neutral"
+      />
+    </div>
+  );
+}
+
+function RhythmCard({
+  eyebrow,
+  big,
+  sub,
+  accent,
+}: {
+  eyebrow: string;
+  big: string;
+  sub: string;
+  accent: "lime" | "muted" | "neutral";
+}) {
+  const bigColor =
+    accent === "lime"
+      ? "text-(--color-lime)"
+      : accent === "muted"
+        ? "text-(--color-ink-3)"
+        : "text-(--color-ink)";
+  return (
+    <div
+      className="rounded-lg px-4 py-3.5 border"
+      style={{
+        background: "var(--color-card)",
+        borderColor: "var(--color-border)",
+      }}
+    >
+      <div className="text-[10px] tracking-[0.15em] uppercase text-(--color-ink-3) mb-1.5">
+        {eyebrow}
+      </div>
+      <div className={`serif text-[28px] font-medium leading-tight ${bigColor}`}>
+        {big}
+      </div>
+      <div className="text-[11px] text-(--color-ink-2) mt-1">{sub}</div>
+    </div>
+  );
+}
+
+function periodLabel(p: GrowthOverview["peak_period"]): string {
+  if (p === "morning") return "清晨";
+  if (p === "afternoon") return "下午";
+  if (p === "evening") return "傍晚";
+  if (p === "night") return "深夜";
+  return "—";
+}
+
+// ============================================================
+// 主题陈列 · 每行有叙事感
+// ============================================================
+function TopicRow({ t, idx }: { t: TopicRank; idx: number }) {
+  const lastDays = t.last_item_at
+    ? Math.max(
+        0,
+        Math.floor(
+          (Date.now() - new Date(t.last_item_at).getTime()) /
+            (24 * 60 * 60 * 1000)
+        )
+      )
+    : null;
+  const lifeDays = Math.max(
+    1,
+    Math.ceil(
+      (Date.now() - new Date(t.created_at).getTime()) / (24 * 60 * 60 * 1000)
+    )
+  );
+
+  return (
+    <Link
+      href={`/topics/${t.slug}` as never}
+      className="group flex items-baseline gap-4 py-3 px-2 -mx-2 rounded transition-colors hover:bg-white/[0.03] border-b border-(--color-border)"
+    >
+      <span
+        className="display text-[10px] text-(--color-ink-3) shrink-0 tabular w-7"
+        style={{ letterSpacing: "0.15em" }}
+      >
+        {String(idx + 1).padStart(2, "0")}
+      </span>
+      <div className="flex-1 min-w-0">
+        <div className="serif text-[17px] text-(--color-ink) font-medium leading-tight mb-0.5">
+          {t.name}
+        </div>
+        <div className="text-[11px] text-(--color-ink-3)">
+          已陪你 {lifeDays} 天
+          {lastDays !== null && (
+            <>
+              {" · "}
+              {lastDays === 0
+                ? "今天还在想"
+                : lastDays <= 3
+                  ? `${lastDays} 天前刚扔`
+                  : lastDays <= 30
+                    ? `${lastDays} 天没动了`
+                    : `${lastDays} 天前最后一次`}
+            </>
+          )}
+        </div>
+      </div>
+      <span className="serif tabular text-[22px] font-medium text-(--color-lime) leading-none">
+        {t.item_count}
+      </span>
+      <span className="text-[12px] text-(--color-ink-3) group-hover:text-(--color-lime) transition-colors">
+        →
+      </span>
+    </Link>
+  );
+}
+
+// ============================================================
+// Heatmap · 同之前但更紧凑
 // ============================================================
 function Heatmap({ daily, maxCount }: { daily: DayCount[]; maxCount: number }) {
-  // 6 列 × 7 行 ≈ 180 天，按周分组
-  // 起始日期对齐到 monday
   const cells: { date: string; count: number; col: number; row: number }[] = [];
-
-  // 找到 daily[0] 是周几（0=sun, 6=sat）, 转成 mon=0
   const firstDate = new Date(daily[0]?.date ?? new Date());
-  const firstDow = (firstDate.getDay() + 6) % 7; // mon=0..sun=6
-
+  const firstDow = (firstDate.getDay() + 6) % 7;
   for (let i = 0; i < daily.length; i++) {
     const dow = (firstDow + i) % 7;
     const col = Math.floor((firstDow + i) / 7);
@@ -143,15 +357,8 @@ function Heatmap({ daily, maxCount }: { daily: DayCount[]; maxCount: number }) {
             </rect>
           );
         })}
-        {/* legend */}
         <g transform={`translate(0, ${height + 6})`}>
-          <text
-            x={0}
-            y={9}
-            fontSize="10"
-            fill="var(--color-ink-3)"
-            style={{ letterSpacing: "0.05em" }}
-          >
+          <text x={0} y={9} fontSize="10" fill="var(--color-ink-3)">
             少
           </text>
           {[0.1, 0.3, 0.55, 0.8, 1].map((op, i) => (
@@ -176,132 +383,6 @@ function Heatmap({ daily, maxCount }: { daily: DayCount[]; maxCount: number }) {
           </text>
         </g>
       </svg>
-    </div>
-  );
-}
-
-// ============================================================
-// 主题排行行
-// ============================================================
-function TopicRankRow({ t, idx }: { t: TopicRank; idx: number }) {
-  return (
-    <Link
-      href={`/topics/${t.slug}` as never}
-      className="group flex items-baseline gap-3 py-2 px-2 -mx-2 rounded transition-colors hover:bg-white/[0.03] border-b border-(--color-border)"
-    >
-      <span className="display text-[10px] text-(--color-ink-3) shrink-0 tabular w-6">
-        {String(idx + 1).padStart(2, "0")}
-      </span>
-      <div className="flex-1 min-w-0">
-        <div className="serif text-[14px] text-(--color-ink) font-medium leading-tight truncate">
-          {t.name}
-        </div>
-      </div>
-      <span className="serif tabular text-[18px] font-medium text-(--color-lime) leading-none">
-        {t.item_count}
-      </span>
-    </Link>
-  );
-}
-
-// ============================================================
-// 周堆叠条
-// ============================================================
-function WeeklyStack({
-  weekly,
-  ranking,
-}: {
-  weekly: TopicWeek[];
-  ranking: TopicRank[];
-}) {
-  const top5Ids = ranking.slice(0, 5).map((t) => t.id);
-  const top5Map = new Map(ranking.slice(0, 5).map((t) => [t.id, t.name]));
-
-  // 每周 → top5 各自 count + others
-  const rows = weekly.map((w) => {
-    const buckets: { id: string; name: string; count: number; opacity: number }[] = [];
-    let othersCount = 0;
-    for (const [tid, n] of Object.entries(w.topics)) {
-      if (top5Ids.includes(tid)) {
-        buckets.push({
-          id: tid,
-          name: top5Map.get(tid) ?? "?",
-          count: n,
-          opacity:
-            1 - (top5Ids.indexOf(tid) / Math.max(1, top5Ids.length - 1)) * 0.55,
-        });
-      } else {
-        othersCount += n;
-      }
-    }
-    if (othersCount > 0) {
-      buckets.push({ id: "__others", name: "其他", count: othersCount, opacity: 0.18 });
-    }
-    const total = buckets.reduce((s, b) => s + b.count, 0);
-    return { period_key: w.period_key, total, buckets };
-  });
-
-  const maxTotal = Math.max(1, ...rows.map((r) => r.total));
-
-  if (rows.length === 0) {
-    return (
-      <p className="text-[12px] text-(--color-ink-3)">还没有数据。</p>
-    );
-  }
-
-  return (
-    <div className="space-y-2">
-      {rows.map((r) => {
-        const widthPct = (r.total / maxTotal) * 100;
-        return (
-          <div key={r.period_key}>
-            <div className="flex items-baseline justify-between text-[10px] text-(--color-ink-3) mb-1 tracking-wider">
-              <span>{r.period_key}</span>
-              <span>{r.total}</span>
-            </div>
-            <div
-              className="flex h-2.5 rounded overflow-hidden"
-              style={{
-                width: `${widthPct}%`,
-                background: "var(--color-border)",
-              }}
-            >
-              {r.buckets.map((b, i) => (
-                <div
-                  key={i}
-                  style={{
-                    flexGrow: b.count,
-                    background: "var(--color-lime)",
-                    opacity: b.opacity,
-                  }}
-                  title={`${b.name} · ${b.count}`}
-                />
-              ))}
-            </div>
-          </div>
-        );
-      })}
-      <div className="mt-3 pt-3 border-t border-(--color-border) flex flex-wrap gap-x-3 gap-y-1.5 text-[10px] text-(--color-ink-3)">
-        {ranking.slice(0, 5).map((t, i) => (
-          <span key={t.id} className="inline-flex items-center gap-1">
-            <span
-              className="w-2 h-2 rounded-sm shrink-0"
-              style={{
-                background: "var(--color-lime)",
-                opacity: 1 - (i / 4) * 0.55,
-              }}
-            />
-            {t.name}
-          </span>
-        ))}
-        <span className="inline-flex items-center gap-1">
-          <span
-            className="w-2 h-2 rounded-sm shrink-0"
-            style={{ background: "var(--color-lime)", opacity: 0.18 }}
-          />
-          其他
-        </span>
-      </div>
     </div>
   );
 }
