@@ -16,6 +16,7 @@
  */
 
 import { useEffect, useRef, useState } from "react";
+import { stashRelated } from "@/lib/items/related-stash";
 
 interface CaptureVoiceModalProps {
   onClose: () => void;
@@ -231,6 +232,11 @@ export function CaptureVoiceModal({ onClose, onDone }: CaptureVoiceModalProps) {
       if (!res.ok) {
         const err = await res.json();
         throw new Error(err.detail || err.error || "入库失败");
+      }
+
+      const data = await res.json();
+      if (Array.isArray(data?.related)) {
+        stashRelated(data.related);
       }
 
       setStep("done");

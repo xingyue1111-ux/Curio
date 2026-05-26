@@ -11,13 +11,15 @@
  *  - 底部悬浮 CTA「扔点东西进来」
  */
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ActionSheet, type CaptureMode } from "./ActionSheet";
 import { CaptureTextModal } from "./CaptureTextModal";
 import { CaptureImageModal } from "./CaptureImageModal";
 import { CaptureVoiceModal } from "./CaptureVoiceModal";
+import { RelatedToast, type RelatedItem } from "./RelatedToast";
+import { popRelated } from "@/lib/items/related-stash";
 import { AppShell } from "@/components/shell/AppShell";
 import type { MonthStats } from "@/lib/items/queries";
 import type { NarrativeWithMeta } from "@/lib/narratives/queries";
@@ -44,6 +46,15 @@ export function HomeClient({
   const [activeMode, setActiveMode] = useState<CaptureMode | null>(null);
   const [recentExpanded, setRecentExpanded] = useState(true);
   const [monthExpanded, setMonthExpanded] = useState(false);
+  const [relatedItems, setRelatedItems] = useState<RelatedItem[] | null>(null);
+
+  // mount + 每次 router.refresh 后检查有没有 stashed related → 弹 toast
+  useEffect(() => {
+    const stashed = popRelated();
+    if (stashed && stashed.length > 0) {
+      setRelatedItems(stashed);
+    }
+  }, []);
 
   function handleSheetSelect(mode: CaptureMode) {
     setSheetOpen(false);
@@ -52,7 +63,15 @@ export function HomeClient({
 
   function handleCaptureDone() {
     setActiveMode(null);
+    // refresh server component 拉新叙事 + 让 effect 再跑一次拿 stashed related
     router.refresh();
+    // router.refresh 不会重新 mount，得手动检查 sessionStorage
+    setTimeout(() => {
+      const stashed = popRelated();
+      if (stashed && stashed.length > 0) {
+        setRelatedItems(stashed);
+      }
+    }, 100);
   }
 
   return (
@@ -169,6 +188,14 @@ export function HomeClient({
             </div>
           </div>
         </div>
+      )}
+
+      {/* 主动联想 toast · 入库后右下角弹出 */}
+      {relatedItems && (
+        <RelatedToast
+          items={relatedItems}
+          onClose={() => setRelatedItems(null)}
+        />
       )}
     </AppShell>
   );

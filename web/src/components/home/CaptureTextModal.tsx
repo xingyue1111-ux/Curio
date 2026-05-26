@@ -12,6 +12,7 @@
  */
 
 import { useState } from "react";
+import { stashRelated } from "@/lib/items/related-stash";
 
 interface CaptureTextModalProps {
   onClose: () => void;
@@ -95,6 +96,12 @@ export function CaptureTextModal({ onClose, onDone }: CaptureTextModalProps) {
       if (!res.ok) {
         const err = await res.json();
         throw new Error(err.detail || err.error || "入库失败");
+      }
+
+      // 拿 related 暂存（HomeClient mount 时会弹 toast）
+      const data = await res.json();
+      if (Array.isArray(data?.related)) {
+        stashRelated(data.related);
       }
 
       setStep("done");

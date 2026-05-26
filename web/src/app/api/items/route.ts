@@ -147,10 +147,18 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // 入库成功 → 失效叙事缓存（下次主页访问会触发重生）
-  // fire-and-forget，不阻塞响应
+  // 入库成功 → 失效叙事缓存
   invalidateNarratives(user).catch((err) =>
     console.warn("[items] invalidate narratives 失败（不阻塞）:", err)
+  );
+
+  // 主动联想：用同一个 embedding 搜过去最相似的 3 条
+  // 阈值 0.5+ 确保是真相关；过滤掉刚插的自己 + 24h 内的（避免推刚扔的同类）
+  const related = await findRelatedItems(supabase, item.id, embedding).catch(
+    (err) => {
+      console.warn("[items] 找联想失败（不阻塞）:", err);
+      return [];
+    }
   );
 
   return NextResponse.json({
@@ -160,7 +168,73 @@ export async function POST(request: NextRequest) {
       topic_name: topicName,
       created_at: item.created_at,
     },
+    related,
   });
+}
+
+// ============================================================
+// 主动联想：找跟新 item 最相似的过去 item
+// ============================================================
+interface RelatedItem {
+  id: string;
+  ai_summary: string | null;
+  topic_name: string | null;
+  similarity: number;
+  days_ago: number;
+  created_at: string;
+}
+
+async function findRelatedItems(
+  supabase: Awaited<ReturnType<typeof getUserSupabase>>,
+  newItemId: string,
+  embedding: number[]
+): Promise<RelatedItem[]> {
+  // 用 search_items RPC 拿候选
+  const { data: hits, error } = await supabase.rpc("search_items", {
+    query_embedding: embedding,
+    match_count: 10, // 多拿一些过滤后还够 3 条
+    similarity_threshold: 0.5,
+  });
+
+  if (error || !hits) return [];
+
+  const now = Date.now();
+  const twentyFourH = 24 * 60 * 60 * 1000;
+
+  const filtered = (hits as Array<{
+    id: string;
+    ai_summary: string | null;
+    topic_id: string | null;
+    similarity: number;
+    created_at: string;
+  }>)
+    .filter((h) => h.id !== newItemId) // 排除自己
+    .filter((h) => now - new Date(h.created_at).getTime() > twentyFourH) // 24h 外
+    .slice(0, 3);
+
+  if (filtered.length === 0) return [];
+
+  // 补 topic_name
+  const topicIds = Array.from(
+    new Set(filtered.map((h) => h.topic_id).filter((id): id is string => !!id))
+  );
+  let topicMap = new Map<string, string>();
+  if (topicIds.length > 0) {
+    const { data: topics } = await supabase
+      .from("topics")
+      .select("id, name")
+      .in("id", topicIds);
+    topicMap = new Map((topics ?? []).map((t) => [t.id, t.name]));
+  }
+
+  return filtered.map((h) => ({
+    id: h.id,
+    ai_summary: h.ai_summary,
+    topic_name: h.topic_id ? topicMap.get(h.topic_id) ?? null : null,
+    similarity: h.similarity,
+    days_ago: Math.floor((now - new Date(h.created_at).getTime()) / (24 * 60 * 60 * 1000)),
+    created_at: h.created_at,
+  }));
 }
 
 function slugify(name: string): string {

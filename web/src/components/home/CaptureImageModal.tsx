@@ -12,6 +12,7 @@
  */
 
 import { useEffect, useRef, useState } from "react";
+import { stashRelated } from "@/lib/items/related-stash";
 
 interface CaptureImageModalProps {
   onClose: () => void;
@@ -153,6 +154,11 @@ export function CaptureImageModal({ onClose, onDone }: CaptureImageModalProps) {
       if (!res.ok) {
         const err = await res.json();
         throw new Error(err.detail || err.error || "入库失败");
+      }
+
+      const data = await res.json();
+      if (Array.isArray(data?.related)) {
+        stashRelated(data.related);
       }
 
       setStep("done");
