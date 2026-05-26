@@ -19,10 +19,11 @@ export async function createClient() {
         getAll() {
           return cookieStore.getAll();
         },
-        setAll(cookiesToSet) {
+        setAll(cookiesToSet: Array<{ name: string; value: string; options?: Record<string, unknown> }>) {
           try {
-            cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options)
+            cookiesToSet.forEach(
+              ({ name, value, options }: { name: string; value: string; options?: Record<string, unknown> }) =>
+                cookieStore.set(name, value, options)
             );
           } catch {
             // Server Component 不能写 cookie；Auth middleware 会兜底刷新 session
