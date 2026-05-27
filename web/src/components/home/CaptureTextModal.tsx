@@ -32,7 +32,7 @@ interface DraftResponse {
     suggested_topic: string;
     suggested_topic_is_new: boolean;
   };
-  embedding_token: string;
+  embedding: number[];
 }
 
 export function CaptureTextModal({ onClose, onDone }: CaptureTextModalProps) {
@@ -90,7 +90,7 @@ export function CaptureTextModal({ onClose, onDone }: CaptureTextModalProps) {
           ai_summary: draft.draft.ai_summary,
           ai_intent: draft.draft.ai_intent,
           topic_name: editedTopic.trim(),
-          embedding_token: draft.embedding_token,
+          embedding: draft.embedding,
         }),
       });
 

@@ -1,8 +1,11 @@
 /**
  * POST /api/items   →   确认入库
  *
- * 前端先 POST /api/items/draft 拿到 AI 建议 + embedding_token，
- * 用户在 UI 上确认（可能改了主题），然后 POST 到这里写入库。
+ * 前端先 POST /api/items/draft 拿到 AI 建议 + embedding，
+ * 用户在 UI 上确认（可能改了主题），然后把 embedding 一起 POST 回来写入库。
+ *
+ * 注意：embedding 跟着前端走一圈（而不是存服务器内存），
+ * 因为 Vercel Serverless 实例间内存不共享，draft 和 confirm 可能落在不同实例。
  *
  * 支持两种 source_type：
  * - text：必填 content
@@ -11,8 +14,9 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser, getUserSupabase } from "@/lib/auth/current-user";
-import { popEmbedding } from "@/lib/items/embedding-cache";
 import { invalidateNarratives } from "@/lib/narratives/queries";
+
+const EMBEDDING_DIM = 1024; // DashScope text-embedding-v3
 
 export const runtime = "nodejs";
 
@@ -29,7 +33,7 @@ interface ConfirmRequest {
   ai_summary: string;
   ai_intent?: string | null;
   topic_name: string;
-  embedding_token: string;
+  embedding: number[];
 }
 
 export async function POST(request: NextRequest) {
@@ -45,13 +49,23 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "invalid_json" }, { status: 400 });
   }
 
-  if (
-    !body.source_type ||
-    !body.ai_summary ||
-    !body.topic_name ||
-    !body.embedding_token
-  ) {
+  if (!body.source_type || !body.ai_summary || !body.topic_name) {
     return NextResponse.json({ error: "missing_fields" }, { status: 400 });
+  }
+
+  // embedding 校验：必须是 1024 维有限数字数组
+  if (
+    !Array.isArray(body.embedding) ||
+    body.embedding.length !== EMBEDDING_DIM ||
+    !body.embedding.every((n) => typeof n === "number" && Number.isFinite(n))
+  ) {
+    return NextResponse.json(
+      {
+        error: "invalid_embedding",
+        detail: "embedding 缺失或格式不对，请重新提交",
+      },
+      { status: 400 }
+    );
   }
 
   // source_type 特定字段校验
@@ -71,16 +85,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const embedding = popEmbedding(user.id, body.embedding_token);
-  if (!embedding) {
-    return NextResponse.json(
-      {
-        error: "embedding_expired",
-        detail: "embedding token 不存在或已过期，请重新提交",
-      },
-      { status: 410 }
-    );
-  }
+  const embedding = body.embedding;
 
   const supabase = await getUserSupabase(user);
 

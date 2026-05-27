@@ -11,7 +11,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser, getUserSupabase } from "@/lib/auth/current-user";
 import { processTextItem, processImageItem } from "@/lib/items/process";
-import { stashEmbedding } from "@/lib/items/embedding-cache";
 import { uploadFile, deleteFile } from "@/lib/storage/upload";
 
 export const runtime = "nodejs";
@@ -102,7 +101,7 @@ async function handleTextDraft(
         suggested_topic: result.suggested_topic,
         suggested_topic_is_new: result.suggested_topic_is_new,
       },
-      embedding_token: stashEmbedding(userId, result.embedding),
+      embedding: result.embedding,
     });
   } catch (err) {
     console.error("[draft:text] AI 处理失败:", err);
@@ -186,7 +185,7 @@ async function handleImageDraft(
         suggested_topic: result.suggested_topic,
         suggested_topic_is_new: result.suggested_topic_is_new,
       },
-      embedding_token: stashEmbedding(userId, result.embedding),
+      embedding: result.embedding,
     });
   } catch (err) {
     console.error("[draft:image] AI 失败，回滚 storage:", err);

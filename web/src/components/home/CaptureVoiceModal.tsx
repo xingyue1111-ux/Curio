@@ -44,7 +44,7 @@ interface DraftResponse {
     suggested_topic: string;
     suggested_topic_is_new: boolean;
   };
-  embedding_token: string;
+  embedding: number[];
 }
 
 // SpeechRecognition 类型在标准 lib 里没有，自己 declare
@@ -226,7 +226,7 @@ export function CaptureVoiceModal({ onClose, onDone }: CaptureVoiceModalProps) {
           ai_summary: draft.draft.ai_summary,
           ai_intent: draft.draft.ai_intent,
           topic_name: editedTopic.trim(),
-          embedding_token: draft.embedding_token,
+          embedding: draft.embedding,
         }),
       });
 
