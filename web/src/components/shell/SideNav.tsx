@@ -15,8 +15,7 @@ export type NavSection =
   | "threads"
   | "reflect"
   | "reports"
-  | "growth"
-  | "graph";
+  | "growth";
 
 interface SideNavProps {
   userInitial: string;
@@ -131,14 +130,6 @@ export function SideNav({
           keyHint="g w"
         >
           成长
-        </NavLink>
-        <NavLink
-          href="/graph"
-          active={active === "graph"}
-          icon={IconGraph}
-          keyHint="g g"
-        >
-          知识图谱
         </NavLink>
 
         <div className="linear-nav-section">recent threads</div>
@@ -360,31 +351,6 @@ function IconGrowth({ className }: { className?: string }) {
         strokeWidth="1.5"
         strokeLinecap="round"
         strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-function IconGraph({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      width="14"
-      height="14"
-      viewBox="0 0 16 16"
-      fill="none"
-      style={{ flexShrink: 0 }}
-    >
-      <circle cx="8" cy="8" r="2" stroke="currentColor" strokeWidth="1.5" />
-      <circle cx="3" cy="3.5" r="1.5" stroke="currentColor" strokeWidth="1.5" />
-      <circle cx="13" cy="3.5" r="1.5" stroke="currentColor" strokeWidth="1.5" />
-      <circle cx="13" cy="12.5" r="1.5" stroke="currentColor" strokeWidth="1.5" />
-      <circle cx="3" cy="12.5" r="1.5" stroke="currentColor" strokeWidth="1.5" />
-      <path
-        d="M4 4.5l2.5 2.5M11.5 7l1-2.5M11.5 9l1 2.5M4 11.5l2.5-2.5"
-        stroke="currentColor"
-        strokeWidth="1.2"
-        strokeLinecap="round"
       />
     </svg>
   );
