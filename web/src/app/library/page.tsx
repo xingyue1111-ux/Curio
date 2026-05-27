@@ -8,17 +8,22 @@
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth/current-user";
 import { getAllItems } from "@/lib/items/list-queries";
+import { getUserTopics } from "@/lib/items/queries";
 import { LibraryClient } from "@/components/library/LibraryClient";
 
 export default async function LibraryPage() {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
 
-  const items = await getAllItems(user, 200);
+  const [items, topics] = await Promise.all([
+    getAllItems(user, 200),
+    getUserTopics(user),
+  ]);
 
   return (
     <LibraryClient
       items={items}
+      allTopics={topics.map((t) => t.name)}
       userInitial={(user.displayName ?? user.email ?? "Y").charAt(0).toUpperCase()}
       userName={user.displayName ?? user.email ?? "Yuri"}
       isDevSeed={user.isDevSeed}

@@ -48,6 +48,7 @@ const emptySearch: SearchState = {
 
 interface LibraryClientProps {
   items: LibraryItem[];
+  allTopics: string[];
   userInitial: string;
   userName: string;
   isDevSeed: boolean;
@@ -55,6 +56,7 @@ interface LibraryClientProps {
 
 export function LibraryClient({
   items,
+  allTopics,
   userInitial,
   userName,
   isDevSeed,
@@ -254,7 +256,7 @@ export function LibraryClient({
       {isSearching ? (
         <SearchView state={search} />
       ) : (
-        <TimelineView items={items} />
+        <TimelineView items={items} allTopics={allTopics} />
       )}
     </AppShell>
   );
@@ -263,7 +265,13 @@ export function LibraryClient({
 // ============================================================
 // 时间线
 // ============================================================
-function TimelineView({ items }: { items: LibraryItem[] }) {
+function TimelineView({
+  items,
+  allTopics,
+}: {
+  items: LibraryItem[];
+  allTopics: string[];
+}) {
   return (
     <>
       <div className="text-[10px] font-extrabold tracking-[0.25em] uppercase text-(--color-ink-3) mb-3">
@@ -284,7 +292,7 @@ function TimelineView({ items }: { items: LibraryItem[] }) {
       ) : (
         <div className="space-y-2 pb-12">
           {items.map((item) => (
-            <ItemCard key={item.id} item={item} />
+            <ItemCard key={item.id} item={item} allTopics={allTopics} />
           ))}
         </div>
       )}
@@ -472,7 +480,13 @@ function CitationCard({
 // ============================================================
 // 时间线 item 卡（带删除 + 主题改名）
 // ============================================================
-function ItemCard({ item }: { item: LibraryItem }) {
+function ItemCard({
+  item,
+  allTopics,
+}: {
+  item: LibraryItem;
+  allTopics: string[];
+}) {
   const router = useRouter();
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -640,7 +654,15 @@ function ItemCard({ item }: { item: LibraryItem }) {
       </div>
 
       {showDetail && (
-        <ItemDetailModal item={item} onClose={() => setShowDetail(false)} />
+        <ItemDetailModal
+          item={item}
+          allTopics={allTopics}
+          onClose={() => setShowDetail(false)}
+          onMoved={() => {
+            setShowDetail(false);
+            router.refresh();
+          }}
+        />
       )}
 
       {/* 删除确认 overlay */}
@@ -685,12 +707,47 @@ function ItemCard({ item }: { item: LibraryItem }) {
 // ============================================================
 function ItemDetailModal({
   item,
+  allTopics,
   onClose,
+  onMoved,
 }: {
   item: LibraryItem;
+  allTopics: string[];
   onClose: () => void;
+  onMoved: () => void;
 }) {
   const fullText = item.ocr_text || item.raw_content;
+  const [editingTopic, setEditingTopic] = useState(false);
+  const [topicInput, setTopicInput] = useState(item.topic_name ?? "");
+  const [saving, setSaving] = useState(false);
+  const [moveError, setMoveError] = useState<string | null>(null);
+
+  async function saveTopic() {
+    const trimmed = topicInput.trim();
+    if (!trimmed || trimmed === item.topic_name) {
+      setEditingTopic(false);
+      setTopicInput(item.topic_name ?? "");
+      return;
+    }
+    setSaving(true);
+    setMoveError(null);
+    try {
+      const res = await fetch(`/api/items/${item.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ topic_name: trimmed }),
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.detail || err.error || "移动失败");
+      }
+      onMoved();
+    } catch (err) {
+      setMoveError(err instanceof Error ? err.message : String(err));
+      setSaving(false);
+    }
+  }
+
   return (
     <div
       className="fixed inset-0 z-40 flex items-start md:items-center justify-center p-0 md:p-6 overflow-y-auto"
@@ -798,16 +855,89 @@ function ItemDetailModal({
           </div>
         )}
 
-        {item.topic_name && (
-          <div className="mt-6 pt-4 border-t border-(--color-border)">
-            <Link
-              href={`/topics/${encodeURIComponent(item.topic_name)}` as never}
-              className="text-[12px] text-(--color-lime) hover:underline"
-            >
-              看「{item.topic_name}」主题的演变 →
-            </Link>
+        {/* 主题 · 可改（移动到别的主题 / 新建） */}
+        <div className="mt-6 pt-4 border-t border-(--color-border)">
+          <div className="text-[9px] font-extrabold tracking-[0.2em] uppercase text-(--color-ink-3) mb-2">
+            归 到 主 题
           </div>
-        )}
+          {editingTopic ? (
+            <>
+              <input
+                autoFocus
+                list="topic-options"
+                value={topicInput}
+                onChange={(e) => setTopicInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    saveTopic();
+                  } else if (e.key === "Escape") {
+                    setEditingTopic(false);
+                    setTopicInput(item.topic_name ?? "");
+                    setMoveError(null);
+                  }
+                }}
+                placeholder="选已有主题，或打字新建"
+                className="w-full rounded-md px-3 py-2 text-[14px] text-(--color-ink) outline-none"
+                style={{
+                  background: "var(--color-card)",
+                  border: "1px solid var(--color-border-lime)",
+                }}
+              />
+              <datalist id="topic-options">
+                {allTopics.map((t) => (
+                  <option key={t} value={t} />
+                ))}
+              </datalist>
+              {moveError && (
+                <div className="text-[11px] text-red-300 mt-1.5">{moveError}</div>
+              )}
+              <div className="flex gap-2 mt-2.5">
+                <button
+                  onClick={() => {
+                    setEditingTopic(false);
+                    setTopicInput(item.topic_name ?? "");
+                    setMoveError(null);
+                  }}
+                  disabled={saving}
+                  className="flex-1 py-2 rounded-md text-[12px] text-(--color-ink-2) border border-(--color-border)"
+                >
+                  取消
+                </button>
+                <button
+                  onClick={saveTopic}
+                  disabled={saving || !topicInput.trim()}
+                  className="flex-[2] py-2 rounded-md text-[12px] font-medium text-(--color-bg-1) disabled:opacity-40"
+                  style={{ background: "var(--color-lime)" }}
+                >
+                  {saving ? "移动中…" : "移到这个主题"}
+                </button>
+              </div>
+            </>
+          ) : (
+            <div className="flex items-center justify-between gap-3">
+              <span className="serif text-[16px] text-(--color-ink)">
+                {item.topic_name ?? "未分类"}
+              </span>
+              <div className="flex items-center gap-3 shrink-0">
+                <button
+                  onClick={() => setEditingTopic(true)}
+                  className="text-[12px] text-(--color-ink-3) hover:text-(--color-lime) transition-colors"
+                >
+                  改主题
+                </button>
+                {item.topic_name && (
+                  <Link
+                    href={`/topics/${encodeURIComponent(item.topic_name)}` as never}
+                    className="text-[12px] text-(--color-lime) hover:underline"
+                  >
+                    看演变 →
+                  </Link>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
