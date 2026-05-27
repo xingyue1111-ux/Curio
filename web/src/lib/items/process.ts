@@ -27,6 +27,8 @@ export interface AiAnalysis {
   suggested_topic: string;
   suggested_topic_is_new: boolean;
   intent: string;
+  /** 即时回应 · 给用户一点新东西（角度/延伸问题/更大命题），不是夸奖 */
+  spark: string;
 }
 
 export interface AiProcessResult extends AiAnalysis {
@@ -54,6 +56,10 @@ export async function analyzeText(
    - 如果不相关，新建一个主题名（4-10 个字，名词性短语，禁止用「其他」「杂项」这种兜底名）
 3. suggested_topic_is_new：如果是新建主题填 true，复用现有主题填 false
 4. intent：一句话猜测用户为什么记这个（"在思考……"、"想保存这个例子用于……"、"对……的观察"）
+5. spark：一句即时回应，给用户一点「新东西」让 ta 眼前一亮（≤40 字）
+   - 可以是：一个 ta 没想到的角度 / 一个值得追下去的延伸问题 / 点出这条背后更大的命题 / 一个相关联想
+   - 绝对不要：夸奖（"好想法！"）、复述 summary、空话套话
+   - 语气：像一个有想法的朋友看到你发的东西后随口接的那句，平和但有点东西
 
 现有主题列表：
 ${existingTopics.length ? existingTopics.map((t, i) => `${i + 1}. ${t}`).join("\n") : "（暂无任何主题）"}
@@ -61,7 +67,7 @@ ${existingTopics.length ? existingTopics.map((t, i) => `${i + 1}. ${t}`).join("\
 ${userNote ? `用户给出的批注（这是最关键的意图信号，要重点参考）：\n"${userNote}"` : "（用户没给批注，纯靠你从内容推测）"}
 
 只输出 JSON：
-{"summary": "...", "suggested_topic": "...", "suggested_topic_is_new": true/false, "intent": "..."}`;
+{"summary": "...", "suggested_topic": "...", "suggested_topic_is_new": true/false, "intent": "...", "spark": "..."}`;
 
   const messages: ChatMessage[] = [
     { role: "system", content: systemPrompt },
@@ -85,7 +91,10 @@ ${userNote ? `用户给出的批注（这是最关键的意图信号，要重点
     );
   }
 
-  return result;
+  return {
+    ...result,
+    spark: typeof result.spark === "string" ? result.spark : "",
+  };
 }
 
 /**
@@ -175,8 +184,15 @@ export async function processImageItem(input: {
     (t) => t.toLowerCase() === vl.suggested_topic.toLowerCase()
   );
 
+  // 图片内容文本：文字图用 OCR，实物/场景图用视觉描述。
+  // 存进 ocr_text 列（语义上是"这张图的文字化内容"），让搜索/embedding/展示都拿得到。
+  const imageContentText =
+    (vl.ocr_text && vl.ocr_text.trim()) ||
+    (vl.description && vl.description.trim()) ||
+    "";
+
   const embeddingText = buildEmbeddingText({
-    content: vl.ocr_text || vl.summary, // 没 OCR 文本就用 summary
+    content: imageContentText || vl.summary, // 都没有就退回 summary
     userNote: input.userNote,
     summary: vl.summary,
   });
@@ -190,7 +206,8 @@ export async function processImageItem(input: {
     suggested_topic: vl.suggested_topic,
     suggested_topic_is_new: suggestedTopicIsNew,
     intent: vl.intent,
-    ocr_text: vl.ocr_text,
+    spark: vl.spark,
+    ocr_text: imageContentText,
     embedding,
   };
 }

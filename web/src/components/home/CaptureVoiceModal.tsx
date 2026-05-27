@@ -40,6 +40,7 @@ interface DraftResponse {
     user_note: string | null;
     ai_summary: string;
     ai_intent: string;
+    ai_spark?: string;
     suggested_topic: string;
     suggested_topic_is_new: boolean;
   };
@@ -594,6 +595,24 @@ function ReviewStep({
           </div>
         )}
       </div>
+
+      {/* AI spark · 即时回应 */}
+      {draft.ai_spark && (
+        <div
+          className="rounded-2xl p-4 mb-3"
+          style={{
+            background: "var(--color-card)",
+            border: "1px solid rgba(176, 242, 99, 0.25)",
+          }}
+        >
+          <div className="text-[9px] font-extrabold tracking-[0.2em] uppercase mb-1.5 text-(--color-lime)">
+            ✦ Curio 想到
+          </div>
+          <div className="serif italic text-[15px] leading-[1.5] text-(--color-ink)">
+            {draft.ai_spark}
+          </div>
+        </div>
+      )}
 
       <div className="mb-4">
         <label className="block text-[10px] font-extrabold tracking-[0.2em] uppercase text-(--color-ink-3) mb-1.5 px-1">

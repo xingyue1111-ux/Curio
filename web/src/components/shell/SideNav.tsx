@@ -14,7 +14,6 @@ export type NavSection =
   | "library"
   | "threads"
   | "reflect"
-  | "reports"
   | "growth";
 
 interface SideNavProps {
@@ -301,35 +300,6 @@ function IconReflect({ className }: { className?: string }) {
         stroke="currentColor"
         strokeWidth="1.5"
         strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-function IconReports({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      width="14"
-      height="14"
-      viewBox="0 0 16 16"
-      fill="none"
-      style={{ flexShrink: 0 }}
-    >
-      <rect
-        x="3"
-        y="2.5"
-        width="10"
-        height="11"
-        rx="1"
-        stroke="currentColor"
-        strokeWidth="1.5"
-      />
-      <path
-        d="M5.5 6h5M5.5 8.5h5M5.5 11h3"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
       />
     </svg>
   );
