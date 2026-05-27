@@ -479,6 +479,7 @@ function ItemCard({ item }: { item: LibraryItem }) {
   const [editingTopic, setEditingTopic] = useState(false);
   const [newTopicName, setNewTopicName] = useState(item.topic_name ?? "");
   const [topicError, setTopicError] = useState<string | null>(null);
+  const [showDetail, setShowDetail] = useState(false);
 
   async function handleDelete() {
     setDeleting(true);
@@ -590,33 +591,56 @@ function ItemCard({ item }: { item: LibraryItem }) {
         <div className="text-[10px] text-red-300 mb-1.5">{topicError}</div>
       )}
 
-      {item.signed_url && (
-        <img
-          src={item.signed_url}
-          alt=""
-          className="w-full rounded-md mb-2"
-          style={{
-            maxHeight: 160,
-            objectFit: "cover",
-            background: "var(--color-bg-2)",
-          }}
-        />
-      )}
+      <div
+        onClick={() => {
+          if (!confirmDelete && !editingTopic) setShowDetail(true);
+        }}
+        className="cursor-pointer"
+      >
+        {item.signed_url && (
+          <img
+            src={item.signed_url}
+            alt=""
+            loading="lazy"
+            decoding="async"
+            className="w-full rounded-md mb-2"
+            style={{
+              height: 160,
+              objectFit: "cover",
+              background: "var(--color-bg-2)",
+            }}
+          />
+        )}
 
-      {item.ai_summary && (
-        <p className="text-[13px] font-semibold text-(--color-ink) leading-snug mb-1">
-          {item.ai_summary}
-        </p>
-      )}
-      {item.user_note && (
-        <p className="serif italic text-[11px] text-(--color-ink-2) leading-snug mb-1">
-          「{item.user_note}」
-        </p>
-      )}
-      {!item.ai_summary && (item.ocr_text || item.raw_content) && (
-        <p className="text-[12px] text-(--color-ink-2) leading-[1.5] line-clamp-3">
-          {item.ocr_text || item.raw_content}
-        </p>
+        {item.ai_summary && (
+          <p className="text-[13px] font-semibold text-(--color-ink) leading-snug mb-1">
+            {item.ai_summary}
+          </p>
+        )}
+        {item.user_note && (
+          <p className="serif italic text-[11px] text-(--color-ink-2) leading-snug mb-1">
+            「{item.user_note}」
+          </p>
+        )}
+        {!item.ai_summary && (item.ocr_text || item.raw_content) && (
+          <p className="text-[12px] text-(--color-ink-2) leading-[1.5] line-clamp-3">
+            {item.ocr_text || item.raw_content}
+          </p>
+        )}
+
+        {/* spark 预览 · 一行，点开看全文 */}
+        {item.ai_spark && (
+          <div className="flex items-baseline gap-1.5 mt-2 pt-2 border-t border-(--color-border)">
+            <span className="text-(--color-lime) text-[11px] shrink-0">✦</span>
+            <span className="text-[11px] text-(--color-ink-2) leading-snug line-clamp-1 italic">
+              {item.ai_spark}
+            </span>
+          </div>
+        )}
+      </div>
+
+      {showDetail && (
+        <ItemDetailModal item={item} onClose={() => setShowDetail(false)} />
       )}
 
       {/* 删除确认 overlay */}
@@ -652,6 +676,139 @@ function ItemCard({ item }: { item: LibraryItem }) {
           </button>
         </div>
       )}
+    </div>
+  );
+}
+
+// ============================================================
+// Item 详情弹窗
+// ============================================================
+function ItemDetailModal({
+  item,
+  onClose,
+}: {
+  item: LibraryItem;
+  onClose: () => void;
+}) {
+  const fullText = item.ocr_text || item.raw_content;
+  return (
+    <div
+      className="fixed inset-0 z-40 flex items-start md:items-center justify-center p-0 md:p-6 overflow-y-auto"
+      style={{ background: "rgba(0,0,0,0.72)" }}
+      onClick={onClose}
+    >
+      <div
+        className="w-full max-w-[640px] rounded-t-[24px] md:rounded-[20px] mt-12 md:mt-0 p-6 pb-10"
+        style={{
+          background:
+            "linear-gradient(180deg, var(--color-card-2) 0%, var(--color-bg-2) 100%)",
+          border: "1px solid var(--color-border)",
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-start justify-between gap-3 mb-5">
+          <div className="text-[10px] text-(--color-ink-3) tracking-wider">
+            {formatDate(item.created_at)} · {sourceLabel(item.source_type)}
+            {item.topic_name && (
+              <span className="text-(--color-forest) ml-1.5">
+                · {item.topic_name}
+              </span>
+            )}
+          </div>
+          <button
+            onClick={onClose}
+            className="text-(--color-ink-3) hover:text-(--color-ink) text-[18px] leading-none -mt-1 shrink-0"
+            aria-label="关闭"
+          >
+            ×
+          </button>
+        </div>
+
+        {item.signed_url && (
+          <img
+            src={item.signed_url}
+            alt=""
+            loading="lazy"
+            decoding="async"
+            className="w-full rounded-lg mb-5"
+            style={{
+              maxHeight: 420,
+              objectFit: "contain",
+              background: "var(--color-bg-2)",
+            }}
+          />
+        )}
+
+        {item.ai_summary && (
+          <h3 className="serif text-[22px] font-medium leading-tight text-(--color-ink) mb-3">
+            {item.ai_summary}
+          </h3>
+        )}
+
+        {/* spark · 建设性洞察 */}
+        {item.ai_spark && (
+          <div
+            className="rounded-xl p-4 mb-4"
+            style={{
+              background: "var(--color-card)",
+              border: "1px solid rgba(176, 242, 99, 0.25)",
+            }}
+          >
+            <div className="text-[9px] font-extrabold tracking-[0.2em] uppercase mb-1.5 text-(--color-lime)">
+              ✦ Curio 想到
+            </div>
+            <div className="serif italic text-[16px] leading-[1.5] text-(--color-ink)">
+              {item.ai_spark}
+            </div>
+          </div>
+        )}
+
+        {item.user_note && (
+          <div className="mb-4">
+            <div className="text-[9px] font-extrabold tracking-[0.2em] uppercase text-(--color-ink-3) mb-1">
+              你 的 批 注
+            </div>
+            <p className="serif italic text-[14px] text-(--color-ink-2) leading-relaxed">
+              「{item.user_note}」
+            </p>
+          </div>
+        )}
+
+        {item.ai_intent && (
+          <div className="mb-4">
+            <div className="text-[9px] font-extrabold tracking-[0.2em] uppercase text-(--color-ink-3) mb-1">
+              Curio 猜 你 为 什 么 记
+            </div>
+            <p className="text-[13px] text-(--color-ink-2) leading-relaxed">
+              {item.ai_intent}
+            </p>
+          </div>
+        )}
+
+        {fullText && (
+          <div>
+            <div className="text-[9px] font-extrabold tracking-[0.2em] uppercase text-(--color-ink-3) mb-1">
+              {item.source_type === "image" || item.source_type === "screenshot"
+                ? "图 中 内 容"
+                : "原 文"}
+            </div>
+            <p className="text-[13px] text-(--color-ink-2) leading-[1.7] whitespace-pre-wrap">
+              {fullText}
+            </p>
+          </div>
+        )}
+
+        {item.topic_name && (
+          <div className="mt-6 pt-4 border-t border-(--color-border)">
+            <Link
+              href={`/topics/${encodeURIComponent(item.topic_name)}` as never}
+              className="text-[12px] text-(--color-lime) hover:underline"
+            >
+              看「{item.topic_name}」主题的演变 →
+            </Link>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

@@ -225,6 +225,7 @@ export function CaptureVoiceModal({ onClose, onDone }: CaptureVoiceModalProps) {
           user_note: draft.draft.user_note,
           ai_summary: draft.draft.ai_summary,
           ai_intent: draft.draft.ai_intent,
+          ai_spark: draft.draft.ai_spark ?? null,
           topic_name: editedTopic.trim(),
           embedding: draft.embedding,
         }),

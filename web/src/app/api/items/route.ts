@@ -32,6 +32,7 @@ interface ConfirmRequest {
   user_note?: string | null;
   ai_summary: string;
   ai_intent?: string | null;
+  ai_spark?: string | null;
   topic_name: string;
   embedding: number[];
 }
@@ -139,6 +140,7 @@ export async function POST(request: NextRequest) {
       user_note: body.user_note ?? null,
       ai_summary: body.ai_summary,
       ai_intent: body.ai_intent ?? null,
+      ai_spark: body.ai_spark ?? null,
       embedding,
     })
     .select("id, created_at")

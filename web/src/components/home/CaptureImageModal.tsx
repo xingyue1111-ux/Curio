@@ -13,6 +13,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { stashRelated } from "@/lib/items/related-stash";
+import { compressImage } from "@/lib/items/compress-image";
 
 interface CaptureImageModalProps {
   onClose: () => void;
@@ -106,8 +107,11 @@ export function CaptureImageModal({ onClose, onDone }: CaptureImageModalProps) {
     setError(null);
 
     try {
+      // 上传前压缩（手机照片可能好几 MB，压到长边 1600px）
+      const compressed = await compressImage(file);
+
       const form = new FormData();
-      form.append("file", file);
+      form.append("file", compressed);
       form.append("source_type", "image");
       if (userNote.trim()) form.append("user_note", userNote.trim());
 
@@ -147,6 +151,7 @@ export function CaptureImageModal({ onClose, onDone }: CaptureImageModalProps) {
           user_note: draft.draft.user_note,
           ai_summary: draft.draft.ai_summary,
           ai_intent: draft.draft.ai_intent,
+          ai_spark: draft.draft.ai_spark ?? null,
           topic_name: editedTopic.trim(),
           embedding: draft.embedding,
         }),

@@ -39,16 +39,29 @@ export default async function TopicDetailPage({
   const user = await getCurrentUser();
   if (!user) redirect("/login");
 
-  const { slug } = await params;
+  const { slug: rawSlug } = await params;
+  // Next.js 动态参数对中文不一定解码，URL 里是 %E6%A4%8D...，
+  // 直接拿去 .eq("slug","植物") 匹配不上 → 404。先解码（decode 对已解码串幂等）。
+  const slug = safeDecode(rawSlug);
   const supabase = await getUserSupabase(user);
 
-  // 拉 topic
-  const { data: topic } = await supabase
+  // 拉 topic：先按 slug 匹配，兜底按 name 匹配（防 slug 历史不一致）
+  let { data: topic } = await supabase
     .from("topics")
     .select("*")
     .eq("user_id", user.id)
     .eq("slug", slug)
     .maybeSingle();
+
+  if (!topic) {
+    const byName = await supabase
+      .from("topics")
+      .select("*")
+      .eq("user_id", user.id)
+      .eq("name", slug)
+      .maybeSingle();
+    topic = byName.data;
+  }
 
   if (!topic) notFound();
   const t = topic as TopicRow;
@@ -221,6 +234,14 @@ export default async function TopicDetailPage({
       </div>
     </AppShell>
   );
+}
+
+function safeDecode(s: string): string {
+  try {
+    return decodeURIComponent(s);
+  } catch {
+    return s;
+  }
 }
 
 function sourceLabel(t: string): string {

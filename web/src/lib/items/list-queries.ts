@@ -8,6 +8,8 @@ export interface LibraryItem {
   id: string;
   source_type: string;
   ai_summary: string | null;
+  ai_intent: string | null;
+  ai_spark: string | null;
   user_note: string | null;
   raw_content: string | null;
   ocr_text: string | null;
@@ -30,7 +32,7 @@ export async function getAllItems(
   const { data, error } = await supabase
     .from("items")
     .select(
-      "id, source_type, ai_summary, user_note, raw_content, ocr_text, storage_path, created_at, topic:topics(id, name)"
+      "id, source_type, ai_summary, ai_intent, ai_spark, user_note, raw_content, ocr_text, storage_path, created_at, topic:topics(id, name)"
     )
     .eq("user_id", user.id)
     .order("created_at", { ascending: false })
@@ -50,6 +52,8 @@ export async function getAllItems(
       id: row.id,
       source_type: row.source_type,
       ai_summary: row.ai_summary,
+      ai_intent: row.ai_intent ?? null,
+      ai_spark: row.ai_spark ?? null,
       user_note: row.user_note,
       raw_content: row.raw_content,
       ocr_text: row.ocr_text,
