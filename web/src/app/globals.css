@@ -219,11 +219,18 @@ body::before {
   }
 }
 
+.linear-shell-content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
 .linear-main {
   flex: 1;
   min-width: 0;
-  min-height: 100vh;
-  padding: 24px 20px 96px;
+  padding: 20px 18px 96px;
 }
 
 @media (min-width: 768px) {
@@ -232,9 +239,127 @@ body::before {
   }
 }
 
+@media (min-width: 1024px) {
+  .linear-main {
+    min-height: 100vh;
+  }
+}
+
 .linear-main-narrow {
   max-width: 720px;
   margin: 0 auto;
+}
+
+/* ---- 顶部导航 · 仅移动端（<1024px）---- */
+
+.linear-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: rgba(8, 16, 12, 0.85);
+  backdrop-filter: blur(20px) saturate(140%);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  border-bottom: 1px solid var(--color-border);
+}
+
+@media (min-width: 1024px) {
+  .linear-topbar {
+    display: none;
+  }
+}
+
+.linear-topbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  color: var(--color-ink);
+  flex-shrink: 0;
+  text-decoration: none;
+}
+
+.linear-topbar-dev {
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  padding: 2px 5px;
+  border-radius: 3px;
+  background: var(--color-lime-soft);
+  color: var(--color-lime);
+}
+
+.linear-topbar-nav {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex: 1;
+  justify-content: center;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.linear-topbar-nav::-webkit-scrollbar {
+  display: none;
+}
+
+.linear-topbar-link {
+  padding: 6px 10px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--color-ink-2);
+  border-radius: 6px;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color 120ms, background 120ms;
+}
+.linear-topbar-link:hover {
+  color: var(--color-ink);
+}
+.linear-topbar-link.active {
+  background: var(--color-glass);
+  color: var(--color-ink);
+}
+
+.linear-topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.linear-topbar-icon-btn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  color: var(--color-ink-2);
+  background: transparent;
+  border: 1px solid var(--color-border);
+  transition: color 120ms, background 120ms;
+}
+.linear-topbar-icon-btn:hover {
+  color: var(--color-ink);
+  background: var(--color-glass);
+}
+
+.linear-topbar-capture {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 7px 12px 7px 10px;
+  border-radius: 999px;
+  background: var(--color-lime);
+  color: #0a0f0c;
+  font-size: 12.5px;
+  font-weight: 700;
+  border: none;
+  box-shadow: 0 6px 18px rgba(176, 242, 99, 0.22);
 }
 
 /* ---- 导航项 · 精致版 ---- */

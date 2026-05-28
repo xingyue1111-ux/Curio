@@ -6,6 +6,10 @@
  * 2. DEV_SEED_USER_ID 环境变量（仅开发期 NODE_ENV !== 'production'）
  * 3. null（要求页面跳转 /login）
  *
+ * ⚠️ 生产环境永远不允许种子用户兜底。
+ *    哪怕 Vercel 上误设了 DEV_SEED_USER_ID，线上也强制走 magic link 真登录，
+ *    保证多人分享时每人各自独立。
+ *
  * 业务代码不要直接 supabase.auth.getUser()，统一走这个函数。
  */
 
@@ -36,15 +40,11 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
     };
   }
 
-  // 2. 种子用户兜底
+  // 2. 种子用户兜底（仅开发环境生效）
   //
-  // 开发期：DEV_SEED_USER_ID 直接生效
-  // 生产期：必须额外开 ALLOW_SEED_USER_IN_PROD=true 才生效
-  //         （这样 V0 自用阶段可以直接部署 Vercel 不走 magic link；
-  //          V1 商业化前把这个变量删掉就强制走真登录）
-  const seedAllowed =
-    process.env.NODE_ENV !== "production" ||
-    process.env.ALLOW_SEED_USER_IN_PROD === "true";
+  // 生产环境硬关：哪怕 Vercel 上设了 DEV_SEED_USER_ID 也不会启用兜底，
+  // 永远要求 magic link 真登录，保证多用户分享时数据互相独立。
+  const seedAllowed = process.env.NODE_ENV !== "production";
 
   if (seedAllowed && process.env.DEV_SEED_USER_ID) {
     const admin = createAdminClient();

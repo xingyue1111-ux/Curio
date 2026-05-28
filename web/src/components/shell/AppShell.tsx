@@ -14,6 +14,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { SideNav, type NavSection } from "./SideNav";
+import { TopBar } from "./TopBar";
 import { CommandPalette } from "./CommandPalette";
 
 interface AppShellProps {
@@ -120,9 +121,17 @@ export function AppShell({
         onCmdOpen={() => setCmdOpen(true)}
         onCapture={onCapture}
       />
-      <main className="linear-main">
-        <div className={narrow ? "linear-main-narrow" : ""}>{children}</div>
-      </main>
+      <div className="linear-shell-content">
+        <TopBar
+          isDevSeed={isDevSeed}
+          active={active}
+          onCmdOpen={() => setCmdOpen(true)}
+          onCapture={onCapture}
+        />
+        <main className="linear-main">
+          <div className={narrow ? "linear-main-narrow" : ""}>{children}</div>
+        </main>
+      </div>
 
       {cmdOpen && (
         <CommandPalette

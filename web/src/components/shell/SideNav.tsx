@@ -13,7 +13,6 @@ export type NavSection =
   | "home"
   | "library"
   | "threads"
-  | "reflect"
   | "growth";
 
 interface SideNavProps {
@@ -113,14 +112,6 @@ export function SideNav({
           keyHint="g l"
         >
           收藏库
-        </NavLink>
-        <NavLink
-          href="/reflect"
-          active={active === "reflect"}
-          icon={IconReflect}
-          keyHint="g r"
-        >
-          今晚反思
         </NavLink>
         <NavLink
           href="/growth"
@@ -279,26 +270,6 @@ function DownloadIcon({ className }: { className?: string }) {
         stroke="currentColor"
         strokeWidth="1.5"
         strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-function IconReflect({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      width="14"
-      height="14"
-      viewBox="0 0 16 16"
-      fill="none"
-      style={{ flexShrink: 0 }}
-    >
-      <path
-        d="M13 8.5A5 5 0 117.5 3a4 4 0 005.5 5.5z"
-        stroke="currentColor"
-        strokeWidth="1.5"
         strokeLinejoin="round"
       />
     </svg>

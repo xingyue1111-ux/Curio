@@ -9,7 +9,6 @@
  *  - profile（基本资料）
  *  - topics（所有主题）
  *  - items（所有 item，embedding 字段排除节省体积）
- *  - reflections（所有反思）
  *  - narratives（叙事缓存）
  *  - topic_maintenance_logs（主题维护记录）
  *
@@ -30,7 +29,7 @@ export async function GET() {
 
   const supabase = await getUserSupabase(user);
 
-  const [profileRes, topicsRes, itemsRes, reflectionsRes, narrativesRes, logsRes] =
+  const [profileRes, topicsRes, itemsRes, narrativesRes, logsRes] =
     await Promise.all([
       supabase.from("profiles").select("*").eq("id", user.id).maybeSingle(),
       supabase.from("topics").select("*").eq("user_id", user.id),
@@ -40,7 +39,6 @@ export async function GET() {
           "id, user_id, topic_id, source_type, raw_content, storage_path, ocr_text, transcript_text, user_note, ai_summary, ai_intent, ai_meta, created_at, updated_at"
         )
         .eq("user_id", user.id),
-      supabase.from("reflections").select("*").eq("user_id", user.id),
       supabase.from("narratives").select("*").eq("user_id", user.id),
       supabase
         .from("topic_maintenance_logs")
@@ -59,13 +57,11 @@ export async function GET() {
     profile: profileRes.data ?? null,
     topics: topicsRes.data ?? [],
     items: itemsRes.data ?? [],
-    reflections: reflectionsRes.data ?? [],
     narratives: narrativesRes.data ?? [],
     topic_maintenance_logs: logsRes.data ?? [],
     counts: {
       topics: topicsRes.data?.length ?? 0,
       items: itemsRes.data?.length ?? 0,
-      reflections: reflectionsRes.data?.length ?? 0,
     },
     note:
       "Storage 文件（图/音频）不在此导出。要拿到原文件，去 Supabase Dashboard → Storage → curio-items 下载",
