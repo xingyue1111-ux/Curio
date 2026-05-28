@@ -1,6 +1,8 @@
 # 部署到 Vercel
 
-V0 自用阶段：用种子用户身份直接上线，不走 magic link。
+线上地址：**https://curio-peach.vercel.app**
+
+多用户已开（2026-05-28）：邮箱+密码登录，每人独立 RLS 隔离的私库。下面流程是从零部署一遍的步骤。
 
 ## 准备
 
@@ -51,7 +53,7 @@ git ls-files web | grep -i env
 
 Vercel 项目页 → **Settings** → **Environment Variables**
 
-**全部按下面 8 个变量逐个加**（每个都勾 Production / Preview / Development 三栏）：
+**全部按下面 7 个变量逐个加**（每个都勾 Production / Preview / Development 三栏）：
 
 | 变量名 | 值 | 来源 |
 |---|---|---|
@@ -61,16 +63,14 @@ Vercel 项目页 → **Settings** → **Environment Variables**
 | `DEEPSEEK_API_KEY` | `sk-xxx` | 同上 |
 | `DASHSCOPE_API_KEY` | `sk-xxx` | 同上 |
 | `ARK_API_KEY` | 火山引擎 ARK key | 同上 |
-| `DEV_SEED_USER_ID` | 你的种子用户 UUID | `pnpm seed:user` 时拿到的 |
-| `ALLOW_SEED_USER_IN_PROD` | `true` | **手动填 true**（必须，否则生产环境会强制登录） |
+| `CRON_SECRET` | `openssl rand -hex 24` 生成 | cron 鉴权用。**不配则主题维护 cron（周日）不工作**（见 `vercel.json`） |
 
-可选（如果用 iOS Shortcuts）：
+可选：
 
-| `SHORTCUTS_TOKEN` | 你自己 `openssl rand -hex 24` 生成的 | |
+| `SHORTCUTS_TOKEN` | 自己 `openssl rand -hex 24` 生成 | iOS Shortcuts 鉴权 |
+| `NEXT_PUBLIC_SITE_URL` | `https://curio-peach.vercel.app` | 部署后回来改成线上域名 |
 
-可选（如果要改默认）：
-
-| `NEXT_PUBLIC_SITE_URL` | `https://curio-yuri.vercel.app`（部署后的真实域名） | 部署后回来改 |
+**⚠️ 不要设** `DEV_SEED_USER_ID` 或 `ALLOW_SEED_USER_IN_PROD`：代码层硬关，生产环境永远走真登录（`src/lib/auth/current-user.ts`），设了也无效。
 
 ## 第 4 步：Deploy
 
@@ -84,20 +84,30 @@ Vercel 项目页 → **Settings** → **Environment Variables**
 | `Error: Missing env...` | 第 3 步漏配某个变量。Vercel Settings → Environment Variables 检查 |
 | `Build failed: cannot resolve @supabase/ssr` | package.json 没推全。`git status` 看看 |
 
-## 第 5 步：验证
+## 第 5 步：Supabase Auth 后台配 URL（不配磁链/邮件会跳错站）
+
+Supabase Dashboard → 选 Curio 项目 → **Authentication → URL Configuration**：
+
+- **Site URL**：填 `https://你的-vercel-域名`（不带末尾斜杠）
+- **Redirect URLs**：加 `https://你的-vercel-域名/**`（带星号通配）
+
+**为什么必须改**：Supabase 一个项目只允许一个 Site URL。如果当初新建项目时被默认填成 `localhost` 或别的项目域名，所有邮件链接（注册确认 / 重置密码）都会跳错地方。详见 `~/.claude/projects/<...>/memory/reference_supabase_auth_gotchas.md`。
+
+## 第 6 步：验证
 
 部署成功后 Vercel 给你一个 `xxx.vercel.app` 域名。
 
 打开：
 
-- `/` → 应该看到主页叙事（顶部柠檬绿小标会显示「· DEV · 种子用户身份」，因为 ALLOW_SEED_USER_IN_PROD=true）
-- 试一下扔图 / 文字 / 语音
+- `/` → 没登录会自动跳 `/login`
+- `/login` → 注册 tab 输邮箱+密码（≥6 位）→ 首次会发确认邮件（**企业邮箱大概率在垃圾箱**，去捞一下点 Confirm 链接）→ 进入空库
+- 扔图 / 文字 / 语音都试一下
 - `/library` → 时间线 + 搜索
 - 主题集合页（点叙事里 thread）
 
-**手机访问**：把 Vercel 域名复制到 iPhone Safari → 添加到主屏幕 → 就是 PWA，跟原生 app 体感一样。
+**手机访问**：Vercel 域名复制到 iPhone Safari → 添加到主屏幕 → 就是 PWA。手机上左侧栏会隐藏，顶部出现导航条。
 
-## 第 6 步（可选）：连 iOS Shortcuts
+## 第 7 步（可选）：连 iOS Shortcuts
 
 按 `IOS_SHORTCUTS.md` 一步步建。endpoint 改成你的 Vercel 域名：
 
@@ -120,11 +130,9 @@ Vercel 自动重新部署，1-2 分钟生效。
 
 - `.env.local` **永远不要 push 到 GitHub**
 - `SUPABASE_SERVICE_ROLE_KEY` 千万只在 Vercel 服务端环境变量里
-- repo **必须 private**（你的 Supabase URL 在代码里能被看到，但 service role key 不在代码里）
-- `ALLOW_SEED_USER_IN_PROD=true` 意味着**任何人访问你的 Vercel 域名都是你**。所以：
-  - 别把 Vercel 域名公开
-  - 或者用 Vercel 的 **Password Protection**（项目 Settings → Security）锁住整个站
-  - V1 商业化前一定要换成 magic link
+- repo **必须 private**（Supabase URL 在 NEXT_PUBLIC_* 里会出现在前端 bundle，但 service role key 不在代码里）
+- 多用户模式下每人按邮箱 RLS 隔离，可以放心给同事 URL 让他们自助注册
+- 拉同事入伙之前提醒一句："首次注册的确认邮件可能在垃圾邮件夹"（Supabase 默认发件人 `noreply@mail.app.supabase.io` 被企业邮箱常归为 spam）
 
 ## 出问题怎么 debug
 

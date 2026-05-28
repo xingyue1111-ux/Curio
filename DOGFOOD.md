@@ -71,9 +71,11 @@ ___
 
 下一步最该做的（按你的真痛点排序）：
 
-- [ ] #3 多步 Agentic 问答（搜索升级）
-- [ ] #1 知识图谱（看见思维地图）
-- [ ] 趋势仪表盘（成长可视化）
-- [ ] Claude Code Agent 化（RSS / GitHub 抓取）
-- [ ] 数据导出 JSON
+- [ ] 「修改密码」页面（拉同事入伙前必做，配套换掉弱密码）
+- [ ] spark 质量调优（语气 / 深度，新捕获才有 spark）
+- [ ] PWA 图标 png 补全 + iOS Shortcuts 装机配置
+- [ ] Claude Code Agent 化（RSS / GitHub 抓取自动入库）
 - [ ] 别的（dogfood 才发现的真痛点）：___
+
+> 已下线（dogfood 前期判定无用，不再做）：知识图谱 /graph、周报月报、今晚反思
+> 已上线（无需再做）：多步 Agentic 问答（深度推理）、成长可视化 /growth、数据导出 /api/export
