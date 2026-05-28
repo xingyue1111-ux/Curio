@@ -53,6 +53,12 @@ export default function LoginPage() {
         const { error } = await supabase.auth.signUp({
           email,
           password,
+          options: {
+            // 主动告诉 Supabase 确认邮件跳回当前域名的 /auth/callback，
+            // 不依赖 Supabase 后台 Site URL 设置——
+            // 避免后台被误配成别的项目地址时，确认链接跳到错的 app。
+            emailRedirectTo: `${window.location.origin}/auth/callback`,
+          },
         });
         if (error) throw error;
       }
