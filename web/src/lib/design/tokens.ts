@@ -1,46 +1,53 @@
 /**
- * Curio · Design System Tokens
+ * Curio · Design System Tokens (v3 · Doodles × Cream × Geist)
  *
  * 与 globals.css 的 @theme 块同源 —— 修改时两边同步。
- * SPEC.md § 9.2 是这套 token 的事实来源。
+ * 2026-05-29 — 全量切到奶白 + 糖果点缀 + Geist/Fraunces。
  */
 
 export const tokens = {
-  // Background mesh
-  bgDeep: "#0a0f0c",
-  bg1: "#0f1612",
-  bg2: "#14211b",
-  bg3: "#1e3328",
+  // Cream neutrals
+  cream50: "#FDFAF4",
+  cream100: "#F8F2E6",
+  cream200: "#EFE5D0",
+  cream300: "#D9CBAE",
 
-  // Cards
-  card: "#16201c",
-  card2: "#1a2520",
-  card3: "#1f2a25",
+  // Ink (深咖墨字)
+  ink900: "#1A1714",
+  ink700: "#4A3F35",
+  ink500: "#7B6B58",
+  ink300: "#B5A793",
 
-  // Accents
-  lime: "#b0f263",
-  limeSoft: "rgba(176, 242, 99, 0.12)",
-  forest: "#4d7a6e",
+  // Candy accents
+  candyGold: "#F4A00D",
+  candyGoldSoft: "#FCE5B4",
+  candySky: "#81AFF8",
+  candySkySoft: "#DDE9FC",
+  candyCoral: "#FF8A6B",
+  candyMint: "#B5E3C8",
 
-  // Text
-  ink: "#ffffff",
-  ink2: "#b3bab5",
-  ink3: "#6b736e",
-  ink4: "#4a5450",
+  // Functional
+  stateSuccess: "#2D7A5F",
+  stateError: "#C04B2A",
 
   // Surfaces
-  glass: "rgba(255, 255, 255, 0.04)",
-  border: "rgba(255, 255, 255, 0.06)",
+  glass: "rgba(26, 23, 20, 0.04)",
+  border: "rgba(122, 95, 60, 0.18)",
+  borderHover: "rgba(122, 95, 60, 0.32)",
 
-  // Radii
-  rCard: "24px",
-  rCardSm: "16px",
+  // Radii (放大一档，doodles 圆润感)
+  rXs: "6px",
+  rSm: "10px",
+  rMd: "14px",
+  rLg: "20px",
+  rXl: "28px",
   rPill: "999px",
 
   // Fonts
   fontSans:
-    '"Inter", -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif',
-  fontSerif: '"Fraunces", "Times New Roman", serif',
+    '"Geist", -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif',
+  fontMono: '"Geist Mono", ui-monospace, "SF Mono", Menlo, monospace',
+  fontSerif: '"Fraunces", "Source Serif Pro", Georgia, serif',
 } as const;
 
 export type Tokens = typeof tokens;

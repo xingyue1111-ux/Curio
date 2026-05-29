@@ -230,7 +230,7 @@ export function LibraryClient({
             <span
               className="absolute top-0.5 w-2.5 h-2.5 rounded-full transition-all"
               style={{
-                background: deep ? "#0a0f0c" : "var(--color-ink-3)",
+                background: deep ? "#1A1714" : "var(--color-ink-3)",
                 left: deep ? "calc(100% - 13px)" : "2px",
               }}
             />
@@ -314,7 +314,7 @@ function SearchView({ state }: { state: SearchState }) {
         style={{
           background:
             "linear-gradient(135deg, var(--color-card-2) 0%, var(--color-bg-2) 100%)",
-          borderColor: "rgba(176, 242, 99, 0.2)",
+          borderColor: "rgba(244, 160, 13, 0.2)",
         }}
       >
         <div className="text-[10px] font-extrabold tracking-[0.25em] uppercase text-(--color-lime) mb-2">
@@ -402,7 +402,7 @@ function AnswerText({
               onClick={() => jumpToCitation(n)}
               className="inline-flex items-center justify-center w-5 h-5 mx-0.5 rounded-md text-[10px] font-bold align-middle transition-colors hover:bg-(--color-lime) hover:text-(--color-bg-1)"
               style={{
-                background: "rgba(176, 242, 99, 0.15)",
+                background: "rgba(244, 160, 13, 0.15)",
                 color: "var(--color-lime)",
               }}
               title={`跳到引用 ${n}`}
@@ -437,7 +437,7 @@ function CitationCard({
         <span
           className="text-[10px] font-bold w-5 h-5 rounded-md flex items-center justify-center shrink-0"
           style={{
-            background: "rgba(176, 242, 99, 0.15)",
+            background: "rgba(244, 160, 13, 0.15)",
             color: "var(--color-lime)",
           }}
         >
@@ -670,9 +670,9 @@ function ItemCard({
         <div
           className="absolute inset-0 rounded-lg flex items-center justify-center gap-2 px-3 z-10"
           style={{
-            background: "rgba(8, 16, 12, 0.92)",
+            background: "rgba(253, 250, 244, 0.96)",
             backdropFilter: "blur(8px)",
-            border: "1px solid rgba(255,80,80,0.3)",
+            border: "1px solid rgba(192, 75, 42, 0.45)",
           }}
         >
           <span className="text-[12px] text-(--color-ink) flex-1">
@@ -808,7 +808,7 @@ function ItemDetailModal({
             className="rounded-xl p-4 mb-4"
             style={{
               background: "var(--color-card)",
-              border: "1px solid rgba(176, 242, 99, 0.25)",
+              border: "1px solid rgba(244, 160, 13, 0.25)",
             }}
           >
             <div className="text-[9px] font-extrabold tracking-[0.2em] uppercase mb-1.5 text-(--color-lime)">

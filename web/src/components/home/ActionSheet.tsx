@@ -82,7 +82,7 @@ export function ActionSheet({ onClose, onSelect }: ActionSheetProps) {
                   ? "var(--color-card)"
                   : "var(--color-card)",
                 border: m.enabled
-                  ? "1px solid rgba(176, 242, 99, 0.2)"
+                  ? "1px solid rgba(244, 160, 13, 0.2)"
                   : "1px solid var(--color-border)",
               }}
             >

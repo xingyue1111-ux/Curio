@@ -137,7 +137,7 @@ export function HomeClient({
         style={{
           background: "var(--color-lime)",
           boxShadow:
-            "0 12px 32px rgba(176, 242, 99, 0.3), 0 4px 12px rgba(0,0,0,0.3)",
+            "0 12px 32px rgba(244, 160, 13, 0.3), 0 4px 12px rgba(0,0,0,0.3)",
         }}
       >
         <span className="w-5 h-5 rounded-full bg-(--color-bg-1) text-(--color-lime) flex items-center justify-center font-extrabold text-sm leading-none">
@@ -234,7 +234,7 @@ function Section({
         >
           {title}
         </span>
-        <span className="flex-1 h-px bg-white/[0.06] group-hover:bg-white/[0.1] transition-colors" />
+        <span className="flex-1 h-px bg-black/[0.08] group-hover:bg-black/[0.12] transition-colors" />
         {subtitle && (
           <span className="text-[10px] text-(--color-ink-3) tracking-wider">
             {subtitle}
@@ -354,7 +354,7 @@ function NarrativeBlock({
               <Link
                 key={i}
                 href={`/threads/${encodeURIComponent(t.label)}` as never}
-                className="group flex items-baseline gap-4 py-2 px-2 -mx-2 rounded transition-colors hover:bg-white/[0.03]"
+                className="group flex items-baseline gap-4 py-2 px-2 -mx-2 rounded transition-colors hover:bg-black/[0.04]"
               >
                 <span
                   className="display text-[10px] text-(--color-ink-3) shrink-0 tabular"

@@ -302,7 +302,7 @@ function ComposeStep({
           className="w-full rounded-2xl p-8 mb-4 text-center transition-opacity hover:opacity-80"
           style={{
             background: "var(--color-card)",
-            border: "1.5px dashed rgba(176, 242, 99, 0.4)",
+            border: "1.5px dashed rgba(244, 160, 13, 0.4)",
           }}
         >
           <div className="serif italic text-[18px] text-(--color-lime) mb-2">
@@ -472,7 +472,7 @@ function ReviewStep({
           className="rounded-2xl p-4 mb-3"
           style={{
             background: "var(--color-card)",
-            border: "1px solid rgba(176, 242, 99, 0.25)",
+            border: "1px solid rgba(244, 160, 13, 0.25)",
           }}
         >
           <div className="text-[9px] font-extrabold tracking-[0.2em] uppercase mb-1.5 text-(--color-lime)">
@@ -518,7 +518,7 @@ function ReviewStep({
           className="w-full rounded-full px-4 py-3 text-[15px] font-bold text-(--color-ink) outline-none"
           style={{
             background: "var(--color-card)",
-            border: "1px solid rgba(176, 242, 99, 0.3)",
+            border: "1px solid rgba(244, 160, 13, 0.3)",
           }}
         />
       </div>

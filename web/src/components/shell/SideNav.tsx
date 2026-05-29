@@ -67,8 +67,8 @@ export function SideNav({
           className="w-full mt-5 mb-3 flex items-center justify-between gap-2 px-3 py-2 rounded-md font-medium text-[12.5px] transition-all"
           style={{
             background: "var(--color-lime)",
-            color: "#0a0f0c",
-            boxShadow: "0 1px 0 rgba(255,255,255,0.1) inset, 0 8px 24px rgba(176, 242, 99, 0.18)",
+            color: "#1A1714",
+            boxShadow: "0 1px 0 rgba(255,255,255,0.1) inset, 0 8px 24px rgba(244, 160, 13, 0.18)",
           }}
         >
           <span className="flex items-center gap-2">
@@ -145,7 +145,7 @@ export function SideNav({
             style={{
               background:
                 "linear-gradient(135deg, var(--color-lime) 0%, var(--color-forest) 100%)",
-              color: "#0a0f0c",
+              color: "#1A1714",
             }}
           >
             {userInitial}
