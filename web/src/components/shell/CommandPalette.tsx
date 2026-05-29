@@ -268,7 +268,7 @@ function CommandItem({
       onClick={onClick}
       className={
         "w-full flex items-center gap-3 px-4 py-2 text-left transition-colors " +
-        (active ? "bg-black/[0.08]" : "")
+        (active ? "bg-white/[0.06]" : "")
       }
     >
       {action.kind === "capture" && (

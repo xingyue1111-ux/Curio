@@ -51,7 +51,7 @@ export default async function TopicsPage() {
             <Link
               key={t.id}
               href={`/topics/${t.slug}` as never}
-              className="group flex items-baseline gap-4 py-3 px-2 -mx-2 rounded transition-colors hover:bg-black/[0.04] border-b border-(--color-border)"
+              className="group flex items-baseline gap-4 py-3 px-2 -mx-2 rounded transition-colors hover:bg-white/[0.03] border-b border-(--color-border)"
             >
               <span
                 className="display text-[10px] text-(--color-ink-3) shrink-0 tabular w-7"

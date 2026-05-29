@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
-    statusBarStyle: "default",
+    statusBarStyle: "black-translucent",
     title: "Curio",
   },
   icons: {
@@ -18,7 +18,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#FDFAF4",
+  themeColor: "#0a0f0c",
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
@@ -33,23 +33,17 @@ export default function RootLayout({
   return (
     <html lang="zh-CN">
       <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-        <link rel="preconnect" href="https://cdn.jsdelivr.net" crossOrigin="" />
-
-        {/* Fraunces · variable opsz + ital · 衬线 hero + editorial body em */}
         <link
-          href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&display=swap"
-          rel="stylesheet"
-        />
-
-        {/* Geist + Geist Mono · Vercel 开源 */}
-        <link
-          href="https://cdn.jsdelivr.net/npm/geist@1.3.1/dist/fonts/geist-sans/style.css"
-          rel="stylesheet"
+          rel="preconnect"
+          href="https://fonts.googleapis.com"
         />
         <link
-          href="https://cdn.jsdelivr.net/npm/geist@1.3.1/dist/fonts/geist-mono/style.css"
+          rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossOrigin=""
+        />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=Cinzel:wght@400;500;600&display=swap"
           rel="stylesheet"
         />
       </head>

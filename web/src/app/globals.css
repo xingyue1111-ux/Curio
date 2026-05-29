@@ -1,84 +1,58 @@
 @import "tailwindcss";
 
 /* ============================================================
- * Curio · Doodles × Cream × Geist (v3)
- * 2026-05-29 — light editorial with candy accents
- *
- * 主体哲学：奶白底 (cream) + 金 / 蓝糖果点缀 (candy) + Fraunces hero + Geist 正文
- * 旧的 token 名 (--color-lime / --color-bg-1 …) 保留，但 value 全换，
- * 让所有引用了这些变量的组件「不改 JSX、自动换皮」。
+ * Curio · Dark Editorial Collection
+ * Design tokens — synced from SPEC.md § 9.2 and v3 mockup
  * ============================================================ */
 
 @theme {
   /* ============================================================
-   * Cream neutrals · 占视觉 75%
-   * ============================================================ */
-  --color-cream-50: #FDFAF4;
-  --color-cream-100: #F8F2E6;
-  --color-cream-200: #EFE5D0;
-  --color-cream-300: #D9CBAE;
-
-  --color-ink-900: #1A1714;
-  --color-ink-700: #4A3F35;
-  --color-ink-500: #7B6B58;
-  --color-ink-300: #B5A793;
-
-  /* ============================================================
-   * Candy accents · 占视觉 15%
-   * ============================================================ */
-  --color-candy-gold: #F4A00D;
-  --color-candy-gold-soft: #FCE5B4;
-  --color-candy-sky: #81AFF8;
-  --color-candy-sky-soft: #DDE9FC;
-  --color-candy-coral: #FF8A6B;
-  --color-candy-mint: #B5E3C8;
-
-  /* ============================================================
-   * Legacy aliases · 旧组件名不动，value 全部换到新系统
+   * Curio · Editorial Scholar (v2)
+   * 学术月刊 × 暗色工具
    * ============================================================ */
 
-  /* 旧深色背景 → 新奶白背景层级 */
-  --color-bg-deep: #FDFAF4;
-  --color-bg-1: #1A1714;   /* ⚠️ 反义用：用作 text-on-gold（深字+亮金背景） */
-  --color-bg-2: #F8F2E6;
-  --color-bg-3: #EFE5D0;
+  /* ---- Background mesh layers ---- */
+  --color-bg-deep: #08100c;
+  --color-bg-1: #0d1712;
+  --color-bg-2: #131e18;
+  --color-bg-3: #1a2a23;
 
-  /* 卡片表面 → 微微偏白 / 微微偏暖 */
-  --color-card: #FFFEFA;
-  --color-card-2: #F8F2E6;
-  --color-card-3: #EFE5D0;
+  /* ---- Card surfaces · 微微提亮 ---- */
+  --color-card: #131c17;
+  --color-card-2: #18221d;
+  --color-card-3: #1d2823;
 
-  /* 主点缀色（旧 lime → 新 gold） */
-  --color-lime: #F4A00D;
-  --color-lime-soft: rgba(244, 160, 13, 0.12);
-  --color-lime-glow: rgba(244, 160, 13, 0.22);
+  /* ---- Primary accent (lime) · 精准强调 ---- */
+  --color-lime: #b0f263;
+  --color-lime-soft: rgba(176, 242, 99, 0.1);
+  --color-lime-glow: rgba(176, 242, 99, 0.18);
 
-  /* 次点缀（旧 forest 绿 → 新 sky 蓝） */
-  --color-forest: #4880D6;
+  /* ---- Secondary (forest) · 弱化使用 ---- */
+  --color-forest: #4d7a6e;
 
-  /* 文字：旧暗底浅字 → 新亮底深字 */
-  --color-ink: #1A1714;
-  --color-ink-2: #4A3F35;
-  --color-ink-3: #7B6B58;
-  --color-ink-4: #B5A793;
+  /* ---- Text · 泛奶白「纸感」 ---- */
+  --color-ink: #f3f5f1; /* 不是纯白，微微泛奶 */
+  --color-ink-2: #a8b0aa;
+  --color-ink-3: #6b736e;
+  --color-ink-4: #464d49;
 
-  /* Surface / 边线 */
-  --color-glass: rgba(26, 23, 20, 0.04);
-  --color-glass-2: rgba(26, 23, 20, 0.06);
-  --color-border: rgba(122, 95, 60, 0.18);
-  --color-border-hover: rgba(122, 95, 60, 0.32);
-  --color-border-lime: rgba(244, 160, 13, 0.4);
+  /* ---- Surface · 玻璃 + 边线 ---- */
+  --color-glass: rgba(255, 255, 255, 0.03);
+  --color-glass-2: rgba(255, 255, 255, 0.05);
+  --color-border: rgba(255, 255, 255, 0.06);
+  --color-border-hover: rgba(255, 255, 255, 0.1);
+  --color-border-lime: rgba(176, 242, 99, 0.18);
 
-  /* 圆角 · 比旧版整体增大一档（doodles 圆润感） */
-  --radius-xs: 6px;
-  --radius-sm: 10px;
-  --radius-md: 14px;
-  --radius-lg: 20px;
-  --radius-xl: 28px;
-  --radius-2xl: 32px;
+  /* ---- Radii · 小而硬 ---- */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 10px;
+  --radius-xl: 14px;
+  --radius-2xl: 20px;
   --radius-pill: 999px;
 
-  /* 间距 · 保持 8px grid */
+  /* ---- Spacing scale · 8px 节奏 ---- */
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
@@ -88,20 +62,17 @@
   --space-12: 48px;
   --space-16: 64px;
 
-  /* 字体三栈：Geist sans + Geist Mono + Fraunces serif/display */
-  --font-sans: "Geist", -apple-system, BlinkMacSystemFont, "PingFang SC",
-    "Helvetica Neue", sans-serif;
-  --font-mono: "Geist Mono", ui-monospace, "SF Mono", Menlo, monospace;
-  --font-serif: "Fraunces", "Source Serif Pro", Georgia, serif;
-  --font-display: "Geist Mono", ui-monospace, "SF Mono", monospace;
+  /* ---- Fonts · 三栈 ---- */
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "PingFang SC",
+    sans-serif;
+  --font-serif: "Cormorant Garamond", "Source Serif Pro", Georgia, serif;
+  --font-display: "Cinzel", "Cormorant Garamond", serif;
 
-  /* 缓动 · 跟旧版一致 */
+  /* ---- Easing · 顺滑 ---- */
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* ============================================================
- * Base reset
- * ============================================================ */
+/* ---- Base reset ---- */
 
 * {
   -webkit-font-smoothing: antialiased;
@@ -113,112 +84,83 @@ body {
   background: var(--color-bg-deep);
   color: var(--color-ink);
   font-family: var(--font-sans);
+  font-feature-settings: "cv11", "ss01", "ss03"; /* Inter 精致变体 */
   letter-spacing: -0.005em;
-  font-feature-settings: "ss01", "cv11";
 }
 
 body {
   min-height: 100vh;
-  /* 顶部一抹淡金光晕，给奶白底加一点暖意 */
   background:
     radial-gradient(
-      ellipse 70% 50% at 50% 0%,
-      rgba(244, 160, 13, 0.06) 0%,
+      ellipse 60% 50% at 50% 0%,
+      rgba(176, 242, 99, 0.05) 0%,
       transparent 60%
     ),
-    var(--color-cream-50);
+    var(--color-bg-deep);
 }
 
-/* ============================================================
- * 文字工具类（保留旧名，重写实现）
- * ============================================================ */
+/* ---- Utility helpers ---- */
 
-/* .serif → Fraunces 主衬线（hero 标题、editorial 字号都用它） */
 .serif {
   font-family: var(--font-serif);
-  font-variation-settings: "opsz" 48, "SOFT" 50;
-  font-feature-settings: "liga" on, "dlig" on, "ss01" on;
-  letter-spacing: -0.012em;
+  font-feature-settings: "liga" on, "dlig" on;
+  letter-spacing: -0.005em;
 }
 
-/* .display → Geist Mono 全大写（旧 Cinzel 的位置全用 mono 替代） */
 .display {
   font-family: var(--font-display);
   font-feature-settings: "liga" on;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  font-weight: 500;
 }
 
 .tabular {
   font-variant-numeric: tabular-nums;
 }
 
-/* ============================================================
- * Focus ring · 金色
- * ============================================================ */
+/* ---- Focus ring · 全局统一 ---- */
+
 *:focus-visible {
-  outline: 2px solid var(--color-candy-gold);
+  outline: 2px solid var(--color-lime);
   outline-offset: 2px;
   border-radius: var(--radius-xs);
 }
 
-/* ============================================================
- * Scrollbar · 偏暖
- * ============================================================ */
+/* ---- Subtle scrollbar ---- */
+
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(122, 95, 60, 0.18);
+  background: rgba(255, 255, 255, 0.06);
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(122, 95, 60, 0.32);
+  background: rgba(255, 255, 255, 0.1);
 }
 
-/* ============================================================
- * 装饰 blob · 替代旧的暗色 mesh
- * 顶部右上一个浅金圆，左下淡蓝点缀
- * ============================================================ */
+/* ---- Web 全局背景（mesh + 顶部光晕） ---- */
+
 body::before {
   content: "";
   position: fixed;
-  top: -160px;
-  right: -180px;
-  width: 520px;
-  height: 520px;
+  top: -200px;
+  right: -200px;
+  width: 600px;
+  height: 600px;
   background: radial-gradient(
     ellipse,
-    rgba(244, 160, 13, 0.18) 0%,
-    transparent 65%
+    rgba(176, 242, 99, 0.12) 0%,
+    transparent 60%
   );
-  filter: blur(40px);
+  filter: blur(80px);
   pointer-events: none;
   z-index: 0;
 }
 
-body::after {
-  content: "";
-  position: fixed;
-  bottom: -200px;
-  left: -160px;
-  width: 480px;
-  height: 480px;
-  background: radial-gradient(
-    ellipse,
-    rgba(129, 175, 248, 0.15) 0%,
-    transparent 65%
-  );
-  filter: blur(50px);
-  pointer-events: none;
-  z-index: 0;
-}
+/* ---- 旧版 app-shell（兼容残留页面，新页面用 AppShell 组件） ---- */
 
-/* ============================================================
- * 旧 app-shell 兼容（少量页面残留）
- * ============================================================ */
 .app-shell {
   position: relative;
   z-index: 1;
@@ -236,7 +178,7 @@ body::after {
 }
 
 /* ============================================================
- * Layout · 主壳（旧 linear-shell 系列 · 全沿用类名）
+ * Layout · 侧边栏 + 主内容（Editorial Scholar）
  * ============================================================ */
 
 .linear-shell {
@@ -269,11 +211,10 @@ body::after {
     height: 100vh;
     position: sticky;
     top: 0;
-    padding: 24px 16px 18px;
+    padding: 20px 14px 16px;
     border-right: 1px solid var(--color-border);
-    background: rgba(253, 250, 244, 0.75);
+    background: rgba(8, 16, 12, 0.7);
     backdrop-filter: blur(24px) saturate(140%);
-    -webkit-backdrop-filter: blur(24px) saturate(140%);
     overflow-y: auto;
   }
 }
@@ -289,12 +230,12 @@ body::after {
 .linear-main {
   flex: 1;
   min-width: 0;
-  padding: 24px 20px 96px;
+  padding: 20px 18px 96px;
 }
 
 @media (min-width: 768px) {
   .linear-main {
-    padding: 64px 64px 120px;
+    padding: 56px 56px 96px;
   }
 }
 
@@ -305,13 +246,12 @@ body::after {
 }
 
 .linear-main-narrow {
-  max-width: 760px;
+  max-width: 720px;
   margin: 0 auto;
 }
 
-/* ============================================================
- * 移动端顶部导航
- * ============================================================ */
+/* ---- 顶部导航 · 仅移动端（<1024px）---- */
+
 .linear-topbar {
   position: sticky;
   top: 0;
@@ -319,8 +259,8 @@ body::after {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 12px 16px;
-  background: rgba(253, 250, 244, 0.86);
+  padding: 10px 14px;
+  background: rgba(8, 16, 12, 0.85);
   backdrop-filter: blur(20px) saturate(140%);
   -webkit-backdrop-filter: blur(20px) saturate(140%);
   border-bottom: 1px solid var(--color-border);
@@ -336,22 +276,21 @@ body::after {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 13px;
+  font-size: 12.5px;
   color: var(--color-ink);
   flex-shrink: 0;
   text-decoration: none;
 }
 
 .linear-topbar-dev {
-  font-family: var(--font-mono);
-  font-size: 9px;
-  font-weight: 600;
+  font-size: 8.5px;
+  font-weight: 700;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  padding: 3px 6px;
-  border-radius: var(--radius-xs);
+  padding: 2px 5px;
+  border-radius: 3px;
   background: var(--color-lime-soft);
-  color: var(--color-candy-gold);
+  color: var(--color-lime);
 }
 
 .linear-topbar-nav {
@@ -368,79 +307,69 @@ body::after {
 }
 
 .linear-topbar-link {
-  padding: 7px 12px;
-  font-size: 13px;
+  padding: 6px 10px;
+  font-size: 12.5px;
   font-weight: 500;
   color: var(--color-ink-2);
-  border-radius: var(--radius-sm);
+  border-radius: 6px;
   text-decoration: none;
   white-space: nowrap;
-  transition: color 160ms var(--ease-out), background 160ms var(--ease-out);
+  transition: color 120ms, background 120ms;
 }
 .linear-topbar-link:hover {
   color: var(--color-ink);
-  background: var(--color-glass);
 }
 .linear-topbar-link.active {
-  background: var(--color-lime-soft);
-  color: var(--color-candy-gold);
-  font-weight: 600;
+  background: var(--color-glass);
+  color: var(--color-ink);
 }
 
 .linear-topbar-actions {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   flex-shrink: 0;
 }
 
 .linear-topbar-icon-btn {
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: var(--radius-pill);
+  border-radius: 50%;
   color: var(--color-ink-2);
   background: transparent;
   border: 1px solid var(--color-border);
-  transition: all 160ms var(--ease-out);
+  transition: color 120ms, background 120ms;
 }
 .linear-topbar-icon-btn:hover {
   color: var(--color-ink);
   background: var(--color-glass);
-  border-color: var(--color-border-hover);
 }
 
 .linear-topbar-capture {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 14px 8px 12px;
-  border-radius: var(--radius-pill);
-  background: var(--color-candy-gold);
-  color: var(--color-ink-900);
-  font-size: 13px;
-  font-weight: 600;
+  gap: 4px;
+  padding: 7px 12px 7px 10px;
+  border-radius: 999px;
+  background: var(--color-lime);
+  color: #0a0f0c;
+  font-size: 12.5px;
+  font-weight: 700;
   border: none;
-  box-shadow: 0 6px 18px rgba(244, 160, 13, 0.28);
-  transition: all 180ms var(--ease-out);
-}
-.linear-topbar-capture:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 10px 24px rgba(244, 160, 13, 0.36);
+  box-shadow: 0 6px 18px rgba(176, 242, 99, 0.22);
 }
 
-/* ============================================================
- * 侧边栏导航项
- * ============================================================ */
+/* ---- 导航项 · 精致版 ---- */
 
 .linear-nav-item {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 8px 12px;
-  border-radius: var(--radius-sm);
+  padding: 7px 10px;
+  border-radius: 6px;
   font-size: 13px;
   font-weight: 500;
   color: var(--color-ink-2);
@@ -449,54 +378,49 @@ body::after {
 }
 
 .linear-nav-item:hover {
-  background: var(--color-cream-100);
+  background: var(--color-glass-2);
   color: var(--color-ink);
 }
 
 .linear-nav-item.active {
   background: var(--color-lime-soft);
-  color: var(--color-candy-gold);
-  font-weight: 600;
+  color: var(--color-lime);
 }
 
 .linear-nav-item.active svg {
-  stroke: var(--color-candy-gold);
+  stroke: var(--color-lime);
 }
 
 .linear-nav-section {
   font-family: var(--font-display);
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 500;
   letter-spacing: 0.22em;
   color: var(--color-ink-3);
-  padding: 20px 12px 8px;
+  padding: 18px 10px 8px;
   text-transform: uppercase;
 }
 
-/* ============================================================
- * 卡片 / 按钮 / 键盘
- * ============================================================ */
+/* ---- Cards & buttons ---- */
 
 .linear-card {
   background: var(--color-card);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
-  transition: all 220ms var(--ease-out);
+  transition: border-color 200ms var(--ease-out);
 }
 
 .linear-card:hover {
   border-color: var(--color-border-hover);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(26, 23, 20, 0.06);
 }
 
 .linear-kbd {
-  font-family: var(--font-mono);
-  font-size: 10.5px;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 10px;
   font-weight: 500;
-  padding: 2.5px 7px;
-  border-radius: var(--radius-xs);
-  background: var(--color-cream-100);
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--color-glass-2);
   border: 1px solid var(--color-border);
   color: var(--color-ink-2);
   line-height: 1.4;
@@ -507,87 +431,77 @@ body::after {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 8px 14px;
-  border-radius: var(--radius-sm);
+  padding: 7px 12px;
+  border-radius: var(--radius-md);
   font-size: 13px;
   font-weight: 500;
-  background: var(--color-cream-50);
+  background: var(--color-card);
   border: 1px solid var(--color-border);
   color: var(--color-ink);
-  transition: all 200ms var(--ease-out);
+  transition: background 200ms var(--ease-out), border-color 200ms var(--ease-out);
   letter-spacing: -0.005em;
-  cursor: pointer;
 }
 
 .linear-btn:hover {
-  background: var(--color-cream-100);
+  background: var(--color-card-2);
   border-color: var(--color-border-hover);
 }
 
 .linear-btn-primary {
-  background: var(--color-candy-gold);
-  color: var(--color-ink-900);
-  border-color: var(--color-candy-gold);
+  background: var(--color-lime);
+  color: #0a0f0c;
+  border-color: var(--color-lime);
   font-weight: 600;
-  box-shadow: 0 4px 14px rgba(244, 160, 13, 0.24);
 }
 
 .linear-btn-primary:hover {
-  background: var(--color-candy-gold);
-  border-color: var(--color-candy-gold);
-  transform: translateY(-1px);
-  box-shadow: 0 8px 22px rgba(244, 160, 13, 0.32);
+  background: var(--color-lime);
+  opacity: 0.92;
+  border-color: var(--color-lime);
 }
 
-/* ============================================================
- * Editorial 文本细节
- * ============================================================ */
+/* ---- Editorial 文本细节 ---- */
 
 .editorial-eyebrow {
   font-family: var(--font-display);
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 500;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: var(--color-candy-gold);
+  color: var(--color-lime);
 }
 
 .editorial-title {
   font-family: var(--font-serif);
-  font-variation-settings: "opsz" 96, "SOFT" 50;
   font-weight: 500;
-  letter-spacing: -0.025em;
-  line-height: 1.06;
-  color: var(--color-ink-900);
+  letter-spacing: -0.015em;
+  line-height: 1.05;
 }
 
 .editorial-body {
-  font-family: var(--font-sans);
+  font-family: var(--font-serif);
   font-weight: 400;
-  font-size: 16.5px;
-  line-height: 1.72;
-  letter-spacing: 0;
-  color: var(--color-ink-700);
+  font-size: 17px;
+  line-height: 1.65;
+  letter-spacing: 0.005em;
+  color: var(--color-ink);
 }
 
 .editorial-body em {
-  font-family: var(--font-serif);
-  font-variation-settings: "opsz" 24;
   font-style: italic;
-  font-weight: 500;
-  color: var(--color-candy-gold);
+  font-weight: 400;
+  color: var(--color-lime);
 }
 
-/* ============================================================
- * Phone-frame · 仅 mockup 用，正式页面不用
- * ============================================================ */
+/* ---- Phone-frame 保留作为可选样式（mockup 用，正式页面不用） ---- */
 
 .phone-frame {
   background: linear-gradient(
     180deg,
-    var(--color-cream-50) 0%,
-    var(--color-cream-100) 60%,
-    var(--color-cream-200) 100%
+    var(--color-bg-3) 0%,
+    var(--color-bg-2) 25%,
+    var(--color-bg-1) 60%,
+    var(--color-bg-deep) 100%
   );
   position: relative;
   overflow: hidden;
@@ -602,21 +516,9 @@ body::after {
   height: 60%;
   background: radial-gradient(
     ellipse,
-    rgba(244, 160, 13, 0.22) 0%,
+    rgba(176, 242, 99, 0.18) 0%,
     transparent 60%
   );
   filter: blur(40px);
   pointer-events: none;
-}
-
-/* ============================================================
- * Reduced motion · 全局兜底
- * ============================================================ */
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
 }

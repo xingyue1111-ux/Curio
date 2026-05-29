@@ -124,7 +124,7 @@ export function RelatedToast({ items, onClose }: RelatedToastProps) {
               key={item.id}
               href={`/library?q=${encodeURIComponent(item.ai_summary?.slice(0, 20) ?? "")}` as never}
               onClick={handleClose}
-              className="block rounded-md px-2.5 py-2 hover:bg-black/[0.05] transition-colors group"
+              className="block rounded-md px-2.5 py-2 hover:bg-white/[0.04] transition-colors group"
             >
               <div className="flex items-baseline gap-2 mb-0.5">
                 <span className="text-[10px] tracking-wider text-(--color-lime) font-medium">
